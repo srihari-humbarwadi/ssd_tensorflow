@@ -9,13 +9,15 @@ def imshow(image):
     plt.imshow(image)
 
 
-def imshow_multiple(images, titles):
+def imshow_multiple(images, titles, save_path=None):
     num_images = len(images)
     plt.subplots(1, num_images, figsize=(num_images*12, 12))
     for i in range(num_images):
         plt.subplot(1, num_images, i+1)
         plt.title(titles[i])
         plt.imshow(images[i])
+    if save_path is not None:
+        plt.savefig(save_path)
 
 
 def draw_boxes_cv2(image, boxes, categories, show_labels=True):
