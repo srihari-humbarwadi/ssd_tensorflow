@@ -1,0 +1,46 @@
+image_height: 300
+image_width: 300
+num_classes: 2
+
+scales: [0.1, 0.2, 0.37, 0.54, 0.71, 0.88, 1.05]
+# feature_sizes: [[56, 56], [28, 28], [14, 14], [7, 7], [5, 5], [3, 3]]
+feature_sizes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
+aspect_ratios:
+  [
+    [0.5, 1, 2],
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.5, 1, 2],
+    [0.5, 1, 2],
+  ]
+clip_default_boxes: No
+
+loc_variance: [0.1, 0.1, 0.2, 0.2]
+match_iou_threshold: 0.5
+
+nms_iou_threshold: 0.5
+score_threshold: 0.45
+
+loc_loss_weight: 1
+cls_loss_weight: 1
+negatives_ratio: 3
+
+tfrecords_train: ssd/data/dataset_files/shapes_dataset/train*
+tfrecords_val: ssd/data/dataset_files/shapes_dataset/val*
+batch_size: 16
+base_lr: 0.0001
+epochs: 10
+patience: 3
+model_dir: model_files
+clear_previous_runs: Yes
+
+scale_lr: Yes
+scale_batch_size: Yes
+
+random_brightness: Yes
+random_contrast: Yes
+random_hue: Yes
+random_saturation: Yes
+random_flip_horizonal: Yes
+random_patch: Yes
