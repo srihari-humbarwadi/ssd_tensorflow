@@ -2,8 +2,8 @@ image_height: 300
 image_width: 300
 num_classes: 2
 
+clip_default_boxes: No
 scales: [0.1, 0.2, 0.37, 0.54, 0.71, 0.88, 1.05]
-# feature_sizes: [[56, 56], [28, 28], [14, 14], [7, 7], [5, 5], [3, 3]]
 feature_sizes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
 aspect_ratios:
   [
@@ -14,7 +14,6 @@ aspect_ratios:
     [0.5, 1, 2],
     [0.5, 1, 2],
   ]
-clip_default_boxes: No
 
 loc_variance: [0.1, 0.1, 0.2, 0.2]
 match_iou_threshold: 0.5
@@ -26,15 +25,23 @@ loc_loss_weight: 1
 cls_loss_weight: 1
 negatives_ratio: 3
 
+rescale_pixels: Yes
+pixel_range: [-1, 1]
+feature_extractor: resnet50_v2
+detection_layers_use_bn: No
+
 tfrecords_train: ssd/data/dataset_files/shapes_dataset/train*
 tfrecords_val: ssd/data/dataset_files/shapes_dataset/val*
 batch_size: 16
 base_lr: 0.0001
+l2_regularization: No
 epochs: 10
 patience: 3
 model_dir: model_files
 clear_previous_runs: Yes
 
+use_gpu: Yes
+gpu_ids: [3]
 scale_lr: Yes
 scale_batch_size: Yes
 
