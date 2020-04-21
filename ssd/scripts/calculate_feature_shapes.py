@@ -1,5 +1,6 @@
-import numpy as np
 import argparse
+
+import numpy as np
 
 
 def _parse_args():
@@ -20,13 +21,7 @@ def _parse_args():
     return args
 
 
-if __name__ == '__main__':
-    args = _parse_args()
-
-    input_height = args.image_height
-    input_width = args.image_width
-    num_feature_maps = args.num_feature_maps
-
+def calculate_feature_shapes(input_height, input_width, num_feature_maps):
     fh = input_height
     fw = input_width
     feature_shapes = []
@@ -41,5 +36,13 @@ if __name__ == '__main__':
         fw = fw - 3 + 1
         feature_shapes.append([fh, fw])
 
-    print(feature_shapes[-num_feature_maps:])
+    return feature_shapes[-num_feature_maps:]
 
+
+if __name__ == '__main__':
+    args = _parse_args()
+
+    input_height = args.image_height
+    input_width = args.image_width
+    num_feature_maps = args.num_feature_maps
+    print(calculate_feature_shapes(input_height, input_width, num_feature_maps))

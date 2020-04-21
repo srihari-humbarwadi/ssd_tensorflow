@@ -26,17 +26,23 @@ def _parse_args():
     return args
 
 
-if __name__ == '__main__':
-    args = _parse_args()
-
-    smin = args.smin * 100
-    smax = args.smax * 100
-    m = args.num_feature_maps - 1
-    scales = [args.s_first]
-
+def calculate_scales(s_first, smin, smax, num_feature_maps):
+    smin = smin * 100
+    smax = smax * 100
+    scales = [s_first]
+    m = num_feature_maps - 1
+    
     for k in range(1, m+2):
         sl = smin + (smax - smin)//(m - 1) * (k - 1)
         scales.append(sl/100)
 
     print(scales)
 
+
+if __name__ == '__main__':
+    args = _parse_args()
+    s_first = args.s_first
+    smin = args.smin
+    smax = args.smax
+    m = args.num_feature_maps - 1
+    print(calculate_scales(s_first, smin, smax, m))
