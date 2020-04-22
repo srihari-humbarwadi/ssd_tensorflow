@@ -2,20 +2,19 @@ import logging
 import pprint
 
 import tensorflow as tf
-import yaml
 
 from ssd.common.box_utils import convert_to_corners
 from ssd.common.viz_utils import draw_boxes_cv2, imshow_multiple
 from ssd.data.dataset_builder import DatasetBuilder
-from ssd.models.decode_predictions import DecodePredictions
+from ssd.layers.decode_predictions import DecodePredictions
+from ssd.common.config import load_config
 
 print('TensorFlow:', tf.__version__)
 logger = tf.get_logger()
 logger.setLevel(logging.INFO)
 
 if __name__ == '__main__':
-    with open('ssd/cfg/shapes_dataset.yaml', 'r') as fp:
-        config = yaml.safe_load(fp)
+    config = load_config('ssd/cfg/shapes_dataset.yaml')
     logger.info('\n\nconfig: {}\n\n'.format(config))
 
     train_dataset = DatasetBuilder('train', config)
@@ -36,4 +35,4 @@ if __name__ == '__main__':
         gt_box_viz = draw_boxes_cv2(image, decoded_boxes, [
                                     'circle' if x == 0 else 'rectangle' for x in decoded_cls_ids], show_labels=True)
         imshow_multiple([gt_box_viz, default_box_viz, ], ['GT_labels', 'Matched_default_boxes'], save_path='default_boxes.png')
-        logger.info('\n\nNo. of matched default boxes: {}\n\n'.format(tf.reduce_sum(positive_mask).numpy()))
+        logger.info('\nNo. of matched default boxes: {}\n\n'.format(tf.reduce_sum(positive_mask).numpy()))

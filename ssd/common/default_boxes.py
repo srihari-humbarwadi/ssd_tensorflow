@@ -9,11 +9,11 @@ class DefaultBoxes:
         self._input_width = config['image_width']
 
         self._scales = config['scales']
-        self._feature_sizes = config['feature_sizes']
+        self.feature_shapes = config['feature_shapes']
         self._strides = tf.constant(
             [[np.ceil(config['image_height'] / x[0]),
               np.ceil(config['image_width'] / x[1])]
-             for x in config['feature_sizes']], dtype=tf.float32)
+             for x in config['feature_shapes']], dtype=tf.float32)
         self._aspect_ratios = config['aspect_ratios']
         self.clip_default_boxes = config['clip_default_boxes']
         self._default_boxes = []
@@ -34,8 +34,8 @@ class DefaultBoxes:
 
     def _build_default_boxes(self):
         default_boxes = []
-        for i in range(len(self._feature_sizes)):
-            feature_size = self._feature_sizes[i]
+        for i in range(len(self.feature_shapes)):
+            feature_size = self.feature_shapes[i]
             aspect_ratios = self._aspect_ratios[i]
             stride = self._strides[i]
             sl = self._scales[i]

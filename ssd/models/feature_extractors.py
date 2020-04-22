@@ -1,7 +1,7 @@
+from tensorflow.keras import Input
 from tensorflow.python.keras.applications.efficientnet import (EfficientNetB0,
                                                                EfficientNetB3,
                                                                EfficientNetB7)
-
 from tensorflow.python.keras.applications.resnet_v2 import (ResNet50V2,
                                                             ResNet101V2)
 
@@ -17,57 +17,62 @@ class FeatureExtractors:
         }
 
     @staticmethod
-    def _efficient_net_b0():
+    def _efficient_net_b0(input_shape):
+        image = Input(shape=input_shape, name='image')
         _layer_names = [
             'block4a_expand_activation',
             'block6a_expand_activation',
             'top_activation'
         ]
-        base_model = EfficientNetB0(include_top=False, input_shape=[None, None, 3])
+        base_model = EfficientNetB0(include_top=False, input_tensor=image)
         feature_maps = [base_model.get_layer(layer_name).output for layer_name in _layer_names]
         return base_model, feature_maps
 
     @staticmethod
-    def _efficient_net_b3():
+    def _efficient_net_b3(input_shape):
+        image = Input(shape=input_shape, name='image')
         _layer_names = [
             'block4a_expand_activation',
             'block6a_expand_activation',
             'top_activation'
         ]
-        base_model = EfficientNetB3(include_top=False, input_shape=[None, None, 3])
+        base_model = EfficientNetB3(include_top=False, input_tensor=image)
         feature_maps = [base_model.get_layer(layer_name).output for layer_name in _layer_names]
         return base_model, feature_maps
 
     @staticmethod
-    def _efficient_net_b7():
+    def _efficient_net_b7(input_shape):
+        image = Input(shape=input_shape, name='image')
         _layer_names = [
             'block4a_expand_activation',
             'block6a_expand_activation',
             'top_activation'
         ]
-        base_model = EfficientNetB7(include_top=False, input_shape=[None, None, 3])
+        base_model = EfficientNetB7(include_top=False, input_tensor=image)
         feature_maps = [base_model.get_layer(layer_name).output for layer_name in _layer_names]
         return base_model, feature_maps
 
     @staticmethod
-    def _resnet_50_v2():
+    def _resnet_50_v2(input_shape):
+        image = Input(shape=input_shape, name='image')
         _layer_names = [
             'conv3_block4_1_relu',
             'conv4_block6_1_relu',
             'post_relu',
         ]
 
-        base_model = ResNet50V2(include_top=False, input_shape=[None, None, 3])
+        base_model = ResNet50V2(include_top=False, input_tensor=image)
         feature_maps = [base_model.get_layer(layer_name).output for layer_name in _layer_names]
         return base_model, feature_maps
 
     @staticmethod
-    def _resnet_101_v2():
+    def _resnet_101_v2(input_shape):
+        image = Input(shape=input_shape, name='image')
         _layer_names = [
             'conv3_block4_1_relu',
             'conv4_block23_1_relu',
             'post_relu'
         ]
-        base_model = ResNet101V2(include_top=False, input_shape=[None, None, 3])
+        base_model = ResNet101V2(include_top=False, input_tensor=image)
         feature_maps = [base_model.get_layer(layer_name).output for layer_name in _layer_names]
         return base_model, feature_maps
