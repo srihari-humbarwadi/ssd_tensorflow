@@ -1,10 +1,11 @@
 image_height: 300
-image_width: 300
+image_width: 360
 num_classes: 2
 
 clip_default_boxes: No
 scales: [0.1, 0.2, 0.37, 0.54, 0.71, 0.88, 1.05]
-feature_shapes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
+# feature_shapes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
+feature_shapes: [[38, 45], [19, 23], [10, 12], [5, 6], [3, 4], [1, 2]]
 aspect_ratios:
   [
     [0.5, 1, 2],
@@ -21,19 +22,24 @@ match_iou_threshold: 0.5
 nms_iou_threshold: 0.5
 score_threshold: 0.45
 
-loc_loss_weight: 1
-cls_loss_weight: 1
+loc_loss_weight: 1.0
+cls_loss_weight: 1.0
 negatives_ratio: 3
+smooth_l1_delta: 1.0
 
 rescale_pixels: Yes
 pixel_range: [-1, 1]
 backbone: resnet_50_v2
 
-model_dir: model_files
+
+train_images: 10000
+val_images: 2500
 tfrecords_train: ssd/data/dataset_files/shapes_dataset/train*
 tfrecords_val: ssd/data/dataset_files/shapes_dataset/val*
-batch_size: 16
-base_lr: 0.0001
+
+model_dir: model_files
+batch_size: 4
+base_lr: 0.001
 l2_regularization: No
 epochs: 10
 patience: 3
@@ -41,7 +47,11 @@ model_dir: model_files
 clear_previous_runs: Yes
 
 use_gpu: Yes
-gpu_ids: [3]
+multi_gpu: Yes
+
+use_tpu: No
+tpu_name: 'tfrc-srihari-v3'
+
 scale_lr: Yes
 scale_batch_size: Yes
 
