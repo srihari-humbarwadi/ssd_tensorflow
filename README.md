@@ -2,8 +2,13 @@
  ### Training underway, some results on resnet_101 backbone
  
  ![](assets/results/17.png)
+ 
+  ![](assets/results/20.png)
+ 
  ![](assets/results/19.png)
- ![](assets/results/13.png)
+ 
+ ![](assets/results/3.png)
+ 
  ![](assets/results/8.png)
  
 
