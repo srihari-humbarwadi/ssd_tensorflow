@@ -48,5 +48,5 @@ def draw_boxes_cv2(image, boxes, categories, show_labels=True):
                                 1,
                                 lineType=cv2.LINE_AA)
         image = cv2.rectangle(image, (_box[0], _box[1]), (_box[2], _box[3]),
-                              [30, 15, 30], 1)
+                              [30, 15, 255], 1)
     return image
