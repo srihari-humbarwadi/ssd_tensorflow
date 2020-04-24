@@ -6,10 +6,9 @@ class CallbackBuilder:
         self._name = name
         self._model_dir = config['model_dir']
         self._early_stopping_patience = config['patience']
-        self._callbacks_list = []
 
     def get_callbacks(self):
-        self._callbacks_list.extend([
+        callbacks_list = [
             tf.keras.callbacks.TensorBoard(log_dir=self._model_dir + 'tensorboard'),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=self._model_dir +
@@ -22,5 +21,5 @@ class CallbackBuilder:
                 monitor='val_loss',
                 min_delta=0,
                 patience=self._early_stopping_patience,
-                verbose=1
-            )])
+                verbose=1)]
+        return callbacks_list
