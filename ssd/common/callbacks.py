@@ -12,7 +12,7 @@ class CallbackBuilder:
             tf.keras.callbacks.TensorBoard(log_dir=self._model_dir + 'tensorboard'),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=self._model_dir +
-                'checkpoints/ssd_weights_{}'.format(self._name) + '{val_loss:.3f}',
+                'checkpoints/ssd_weights_{}'.format(self._name),
                 monitor='val_loss',
                 save_best_only=True,
                 save_weights_only=True,

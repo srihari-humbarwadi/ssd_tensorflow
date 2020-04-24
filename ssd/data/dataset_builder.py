@@ -115,7 +115,6 @@ class DatasetBuilder:
         dataset = dataset.shuffle(512)
         dataset = dataset.map(self._parse_and_create_label,
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        dataset = dataset.apply(tf.data.experimental.ignore_errors())
         dataset = dataset.batch(self._batch_size, drop_remainder=True)
         dataset = dataset.repeat()
         dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)

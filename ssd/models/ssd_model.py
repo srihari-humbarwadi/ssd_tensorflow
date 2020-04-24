@@ -44,13 +44,12 @@ class SSDModel(tf.keras.Model):
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         loss_dict = {
-            'cls_loss': cls_loss,
-            'loc_loss': loc_loss,
-            'loss': total_loss
+            'cls_loss': tf.reduce_mean(cls_loss),
+            'loc_loss': tf.reduce_mean(loc_loss),
+            'loss': tf.reduce_mean(total_loss)
         }
         return loss_dict
 
-    @tf.function
     def test_step(self, data):
         images, y_true = data[0], data[1]
 
@@ -61,9 +60,9 @@ class SSDModel(tf.keras.Model):
         total_loss = tf.reduce_sum(loss, axis=0)
         
         loss_dict = {
-            'cls_loss': cls_loss,
-            'loc_loss': loc_loss,
-            'loss': total_loss,
+            'cls_loss': tf.reduce_mean(cls_loss),
+            'loc_loss': tf.reduce_mean(loc_loss),
+            'loss': tf.reduce_mean(total_loss)
         }
         return loss_dict
 

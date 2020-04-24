@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 def get_strategy(config):
     if (not config['use_gpu']) and (not config['use_tpu']):
-        strategy = tf.strategy.OneDeviceStrategy(device='/cpu:0')
+        strategy = tf.distribute.OneDeviceStrategy(device='/cpu:0')
         logger.info('Running on CPU')
 
     elif config['use_gpu']:
