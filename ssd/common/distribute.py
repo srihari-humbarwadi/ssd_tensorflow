@@ -20,7 +20,7 @@ def get_strategy(config):
             strategy = tf.distribute.MirroredStrategy()
             logger.info('Running with MirroredStrategy on {} GPU\'s '.format(strategy.num_replicas_in_sync))
         else:
-            strategy = tf.strategy.OneDeviceStrategy(device='/gpu:0')
+            strategy = tf.distribute.OneDeviceStrategy(device='/gpu:0')
             logger.info('Running on GPU')
 
     elif config['use_tpu']:
