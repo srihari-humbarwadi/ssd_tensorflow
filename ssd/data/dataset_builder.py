@@ -8,6 +8,7 @@ class DatasetBuilder:
 
     def __init__(self, split, config):
         self._dataset = None
+        self._split = split
         self._label_encoder = LabelEncoder(config)
         self._input_height = config['image_height']
         self._input_width = config['image_width']
@@ -15,13 +16,17 @@ class DatasetBuilder:
         self._tfrecords = tf.data.Dataset.list_files(config['tfrecords_' + split])
         self._random_brightness = config['random_brightness']
         self._random_contrast = config['random_contrast']
-        self._random_hue = config['random_hue']
         self._random_saturation = config['random_saturation']
         self._random_flip_horizonal = config['random_flip_horizonal']
         self._random_patch = config['random_patch']
+        self._brightness_max_delta = config['brightness_max_delta']
+        self._contrast_lower = config['contrast_lower']
+        self._contrast_upper = config['contrast_upper']
+        self._saturation_lower = config['saturation_lower']
+        self._saturation_upper = config['saturation_upper']
         self._build_tfrecord_dataset()
 
-    def _random_flip_data(self, image, boxes):
+    def _random_flip_horizontal_fn(self, image, boxes):
         w = tf.cast(tf.shape(image)[1], dtype=tf.float32)
         if tf.random.uniform(()) > 0.5:
             image = tf.image.flip_left_right(image)
@@ -30,9 +35,35 @@ class DatasetBuilder:
                 axis=-1)
         return image, boxes
 
+    def _random_brightness_fn(self, image):
+        image = tf.image.random_brightness(image, self._brightness_max_delta)
+        return tf.clip_by_value(image, 0.0, 1)
+
+    def _random_contrast_fn(self, image):
+        image = tf.image.random_contrast(image, self._contrast_lower, self._contrast_upper)
+        return tf.clip_by_value(image, 0.0, 1)
+
+    def _random_saturation_fn(self, image):
+        image = tf.image.random_contrast(image, self._saturation_lower, self._saturation_upper)
+        return tf.clip_by_value(image, 0.0, 1)
+
+    def _random_patch_fn(self, image, boxes):
+        pass
+
+
     def _augment_data(self, image, boxes):
+        if self._split == 'val':
+            return image, boxes
+        image = image / 255.0
         if self._random_flip_horizonal:
-            image, boxes = self._random_flip_data(image, boxes)
+            image, boxes = self._random_flip_horizontal_fn(image, boxes)
+        if self._random_brightness:
+            image = self._random_brightness_fn(image)
+        if self._random_contrast:
+            image = self._random_contrast_fn(image)
+        if self._random_saturation:
+            image = self._random_saturation_fn(image)
+        image = image * 255.0
         return image, boxes
 
     def _parse_example(self, example_proto):
@@ -69,8 +100,8 @@ class DatasetBuilder:
 
     def _parse_and_create_label(self, example_proto):
         image, boxes, classes = self._parse_example(example_proto)
-        image = (image - 127.5) / 127.5
         image, boxes = self._augment_data(image, boxes)
+        image = (image - 127.5) / 127.5
         boxes_xywh = convert_to_xywh(boxes)
         label = self._label_encoder.encode_sample(boxes_xywh, classes)
         return image, label
@@ -84,6 +115,7 @@ class DatasetBuilder:
         dataset = dataset.shuffle(512)
         dataset = dataset.map(self._parse_and_create_label,
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        dataset = dataset.apply(tf.data.experimental.ignore_errors())
         dataset = dataset.batch(self._batch_size, drop_remainder=True)
         dataset = dataset.repeat()
         dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
