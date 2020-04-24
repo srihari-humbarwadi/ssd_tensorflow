@@ -78,6 +78,6 @@ class MultiBoxLoss(tf.losses.Loss):
         loc_loss = tf.reduce_sum(loc_loss, axis=-1)
         loc_loss = loc_loss / num_positives
 
-        cls_loss = cls_loss * self._cls_loss_weight
-        loc_loss = loc_loss * self._loc_loss_weight
+        cls_loss = tf.reduce_mean(cls_loss * self._cls_loss_weight)
+        loc_loss = tf.reduce_mean(loc_loss * self._loc_loss_weight)
         return cls_loss, loc_loss

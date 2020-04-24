@@ -36,8 +36,7 @@ if __name__ == '__main__':
 
             default_box_viz = draw_boxes_cv2(image, matched_default_boxes_xywh,
                                              range(len(matched_default_boxes)), show_labels=False)
-            gt_box_viz = draw_boxes_cv2(image, decoded_boxes, [
-                                        'circle' if x == 0 else 'rectangle' for x in decoded_cls_ids], show_labels=True)
+            gt_box_viz = draw_boxes_cv2(image, decoded_boxes, [config['classes'][cls_id] for cls_id in decoded_cls_ids], show_labels=True)
             imshow_multiple([gt_box_viz, default_box_viz, ], ['GT_labels', 'Matched_default_boxes'], save_path=image_name)
             matched_boxes.append(tf.reduce_sum(positive_mask).numpy())
         logger.info('No. of matched default boxes: {}\n\n'.format(matched_boxes))
