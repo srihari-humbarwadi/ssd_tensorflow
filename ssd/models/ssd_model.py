@@ -20,6 +20,7 @@ class SSDModel(tf.keras.Model):
         self._default_boxs_per_feature_map = [len(x) for x in config['aspect_ratios'][:-1]]
         self._feature_extractors = FeatureExtractors()
         self._decode_predictions = DecodePredictions(config)
+        self._freeze_bn = config['freeze_bn']
         self._network = self._build_network()
 
     def compile(self, loss_fn, optimizer, **kwargs):
@@ -28,7 +29,8 @@ class SSDModel(tf.keras.Model):
         self.optimizer = optimizer
 
     def call(self, x, training):
-        return self._network(x, training=training)
+        is_training = training and (not self._freeze_bn)
+        return self._network(x, training=is_training)
 
     @tf.function
     def train_step(self, data):
@@ -58,7 +60,7 @@ class SSDModel(tf.keras.Model):
         cls_loss = loss[0]
         loc_loss = loss[1]
         total_loss = tf.reduce_sum(loss, axis=0)
-        
+
         loss_dict = {
             'cls_loss': cls_loss,
             'loc_loss': loc_loss,
@@ -76,7 +78,7 @@ class SSDModel(tf.keras.Model):
             'cls_ids': cls_ids,
             'scores': scores
         }
-    
+
     @tf.function
     def get_detections(self, images):
         return self.predict_step((images,))

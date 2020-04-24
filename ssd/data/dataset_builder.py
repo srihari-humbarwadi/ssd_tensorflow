@@ -14,6 +14,7 @@ class DatasetBuilder:
         self._input_width = config['image_width']
         self._batch_size = config['batch_size']
         self._tfrecords = tf.data.Dataset.list_files(config['tfrecords_' + split])
+        self._augment_val_dataset = config['augment_val_dataset']
         self._random_brightness = config['random_brightness']
         self._random_contrast = config['random_contrast']
         self._random_saturation = config['random_saturation']
@@ -52,7 +53,7 @@ class DatasetBuilder:
 
 
     def _augment_data(self, image, boxes):
-        if self._split == 'val':
+        if self._split == 'val' and not self._augment_val_dataset:
             return image, boxes
         image = image / 255.0
         if self._random_flip_horizonal:
