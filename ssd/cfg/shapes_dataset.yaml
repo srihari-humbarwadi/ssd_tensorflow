@@ -1,6 +1,7 @@
 image_height: 300
 image_width: 360
 num_classes: 2
+classes: [circle, rectangle]
 
 clip_default_boxes: No
 scales: [0.1, 0.2, 0.37, 0.54, 0.71, 0.88, 1.05]
@@ -15,12 +16,13 @@ aspect_ratios:
     [0.5, 1, 2],
     [0.5, 1, 2]
   ]
-
 loc_variance: [0.1, 0.1, 0.2, 0.2]
+
 match_iou_threshold: 0.5
+max_detections: 20
 
 nms_iou_threshold: 0.5
-score_threshold: 0.45
+score_threshold: 0.5
 
 loc_loss_weight: 1.0
 cls_loss_weight: 1.0
@@ -61,3 +63,10 @@ random_hue: Yes
 random_saturation: Yes
 random_flip_horizonal: Yes
 random_patch: Yes
+
+brightness_max_delta: 25
+contrast_lower: 125
+contrast_upper: 350
+hue_max_delta: 5
+saturation_lower: 125
+saturation_upper: 350
