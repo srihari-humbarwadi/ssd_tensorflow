@@ -14,6 +14,7 @@ class DecodePredictions(tf.keras.layers.Layer):
         self._nms_score_threshold = config['score_threshold']
         self._input_height = config['image_height']
         self._input_width = config['image_width']
+        self._max_detections = config['max_detections']
 
     def _decode_loc_predictions(self, loc_predictions):
         boxes = loc_predictions * self._loc_variance
@@ -59,7 +60,7 @@ class DecodePredictions(tf.keras.layers.Layer):
         cls_ids = cls_ids - 1  # background is encoded cls_id 0
         nms_idx = tf.image.non_max_suppression(boxes,
                                                cls_scores,
-                                               max_output_size=100,
+                                               max_output_size=self._max_detections,
                                                iou_threshold=self._nms_iou_threshold,
                                                score_threshold=self._nms_score_threshold)
 
