@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def imshow(image):
-    plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(16, 16))
     plt.imshow(image)
 
 

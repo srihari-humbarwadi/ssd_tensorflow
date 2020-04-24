@@ -9,6 +9,7 @@ class DatasetBuilder:
     def __init__(self, split, config):
         self._dataset = None
         self._split = split
+        self._backbone = config['backbone']
         self._label_encoder = LabelEncoder(config)
         self._input_height = config['image_height']
         self._input_width = config['image_width']
@@ -102,7 +103,10 @@ class DatasetBuilder:
     def _parse_and_create_label(self, example_proto):
         image, boxes, classes = self._parse_example(example_proto)
         image, boxes = self._augment_data(image, boxes)
-        image = (image - 127.5) / 127.5
+        
+        if 'resnet' in self._backbone:
+            image = (image - 127.5) / 127.5
+        
         boxes_xywh = convert_to_xywh(boxes)
         label = self._label_encoder.encode_sample(boxes_xywh, classes)
         return image, label

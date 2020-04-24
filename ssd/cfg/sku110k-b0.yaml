@@ -30,7 +30,7 @@ smooth_l1_delta: 1.0
 
 rescale_pixels: Yes
 pixel_range: [-1, 1]
-backbone: resnet_50_v2
+backbone: efficient_net_b0
 freeze_bn: True
 
 train_images: 8300
@@ -40,22 +40,22 @@ tfrecords_train: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
 tfrecords_val: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/val*
 tfrecords_test: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/test*
 
-model_dir: gs://ssd_eu/
+model_dir: gs://ssd_eu/b0/
 batch_size: 3
-base_lr: 0.00002
+base_lr: 0.00001
 l2_regularization: No
-epochs: 500
-patience: 501
+epochs: 450
+patience: 500
 cache_dataset_in_memory: Yes
 
-resume_training: False
-clear_previous_runs: Yes
+resume_training: Yes
+clear_previous_runs: No
 
 use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: 'tfrc-srihari-v3-1'
+tpu_name: 'tfrc-srihari-v3-3'
 
 scale_lr: Yes
 scale_batch_size: Yes

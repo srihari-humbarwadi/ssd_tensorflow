@@ -38,6 +38,7 @@ val_images: 588
 
 tfrecords_train: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
 tfrecords_val: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/val*
+tfrecords_test: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/test*
 
 model_dir: gs://ssd_eu/101/
 batch_size: 2
@@ -54,7 +55,7 @@ use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: 'srihari-v3-8-b'
+tpu_name: 'tfrc-srihari-v3-2'
 
 scale_lr: Yes
 scale_batch_size: Yes

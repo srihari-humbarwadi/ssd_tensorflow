@@ -33,6 +33,7 @@ def get_strategy(config):
                         .format(tpu.cluster_spec().as_dict()['worker'],
                                 strategy.num_replicas_in_sync))
         except Exception:
+            raise ValueError
             strategy = tf.distribute.OneDeviceStrategy(device='/cpu:0')
             logger.warning('Failed initializing TPU! Running on CPU')
     return strategy
