@@ -1,0 +1,71 @@
+image_height: 1024
+image_width: 1024
+num_classes: 1
+classes: [object]
+
+clip_default_boxes: No
+scales: [0.04, 0.06, 0.24, 0.42, 0.6, 0.78, 0.96, 1.14]
+feature_shapes: [[128, 128], [64, 64], [32, 32], [16, 16], [8, 8], [6, 6], [4, 4]]
+aspect_ratios:
+  [
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.333, 0.5, 1, 2, 3],
+    [0.5, 1, 2],
+    [0.5, 1, 2]
+  ]
+loc_variance: [0.1, 0.1, 0.2, 0.2]
+
+match_iou_threshold: 0.45
+max_detections: 1000
+
+nms_iou_threshold: 0.5
+score_threshold: 0.45
+max_detections: 1000
+
+loc_loss_weight: 1.0
+cls_loss_weight: 1.0
+negatives_ratio: 3
+smooth_l1_delta: 1.0
+
+rescale_pixels: Yes
+pixel_range: [-1, 1]
+backbone: resnet_50_v2
+
+
+train_images: 8300
+val_images: 588
+tfrecords_train: ssd/data/dataset_files/sku110k/sku110k_tfrecords/train*
+tfrecords_val: ssd/data/dataset_files/sku110k/sku110k_tfrecords/val*
+
+model_dir: model_files
+batch_size: 1
+base_lr: 0.001
+l2_regularization: No
+epochs: 10
+patience: 3
+model_dir: model_files
+clear_previous_runs: Yes
+
+use_gpu: Yes
+multi_gpu: No
+
+use_tpu: No
+tpu_name: 'tfrc-srihari-v3'
+
+scale_lr: Yes
+scale_batch_size: Yes
+
+random_brightness: Yes
+random_contrast: Yes
+random_saturation: Yes
+random_flip_horizonal: Yes
+random_patch: Yes
+
+brightness_max_delta: 0.10
+contrast_lower: 0.5
+contrast_upper: 1.5
+saturation_lower: 0.5
+saturation_upper: 1.5
