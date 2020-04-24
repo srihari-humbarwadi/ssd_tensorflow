@@ -5,17 +5,26 @@ import numpy as np
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image_height',
-                        type=int,
-                        help='input height of the model')
-
-    parser.add_argument('--image_width',
-                        type=int,
-                        help='input width of the model')
-
-    parser.add_argument('--num_feature_maps',
+    parser.add_argument('-H',
+                        '--image_height',
                         type=int,
                         required=True,
+                        metavar='',
+                        help='input height of the model')
+
+    parser.add_argument('-W',
+                        '--image_width',
+                        type=int,
+                        required=True,
+                        metavar='',
+                        help='input width of the model')
+
+    parser.add_argument('-n',
+                        '--num_feature_maps',
+                        type=int,
+                        required=True,
+                        choices=[6, 7],
+                        metavar='',
                         help='Number of feature maps')
     args = parser.parse_args()
     return args
