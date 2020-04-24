@@ -1,0 +1,67 @@
+from glob import glob
+import logging
+import os
+from pprint import pprint
+
+import tensorflow as tf
+
+from ssd.common.callbacks import CallbackBuilder
+from ssd.common.distribute import get_strategy
+from ssd.common.config import load_config
+from ssd.data.dataset_builder import DatasetBuilder
+from ssd.losses.multibox_loss import MultiBoxLoss
+from ssd.models.ssd_model import SSDModel
+
+logger = tf.get_logger()
+logger.setLevel(logging.INFO)
+
+logger.info('version: {}'.format(tf.__version__))
+
+
+config = load_config('ssd/cfg/sku110k.yaml')
+
+strategy = get_strategy(config)
+
+epochs = config['epochs']
+
+lr = config['base_lr']
+lr = config['base_lr']
+lr = lr if not config['scale_lr'] else lr * strategy.num_replicas_in_sync
+
+batch_size = config['batch_size']
+batch_size = batch_size if not config['scale_batch_size'] else batch_size * strategy.num_replicas_in_sync
+config['batch_size'] = batch_size
+
+train_steps = config['train_images'] // config['batch_size']
+val_steps = config['val_images'] // config['batch_size']
+
+print('\n')
+pprint(config, width=120, compact=True)
+
+
+with strategy.scope():
+    train_dataset = DatasetBuilder('train', config)
+    val_dataset = DatasetBuilder('val', config)
+
+    loss_fn = MultiBoxLoss(config)
+    optimizer = tf.optimizers.Adam(learning_rate=lr)
+    callbacks_list = CallbackBuilder('test_run', config).get_callbacks()
+
+    model = SSDModel(config)
+    model.compile(loss_fn=loss_fn, optimizer=optimizer)
+
+
+if config['clear_previous_runs']:
+    if config['use_tpu']:
+        logger.warning('Skipping GCS Bucket')
+    else:
+        [os.remove(file) for file in glob(config['model_dir'] + '/checkpoints/*')]
+        [os.remove(file) for file in glob(config['model_dir'] + '/tensorboard/*')]
+        logger.info('Cleared existing model files')
+
+model.fit(train_dataset.dataset,
+          epochs=epochs,
+          steps_per_epoch=train_steps,
+          validation_data=val_dataset.dataset,
+          validation_steps=val_steps,
+          callbacks=callbacks_list)
