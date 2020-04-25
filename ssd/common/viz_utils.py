@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def imshow(image):
-    plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(16, 16))
     plt.imshow(image)
 
 
@@ -20,7 +20,7 @@ def imshow_multiple(images, titles, save_path=None):
         plt.savefig(save_path)
 
 
-def draw_boxes_cv2(image, boxes, categories, show_labels=True):
+def draw_boxes_cv2(image, boxes, categories, show_labels=True, thickness=1):
     image = np.array(image, dtype=np.uint8)
     boxes = np.array(boxes, dtype=np.int32)
     categories = np.array(categories)
@@ -48,5 +48,5 @@ def draw_boxes_cv2(image, boxes, categories, show_labels=True):
                                 1,
                                 lineType=cv2.LINE_AA)
         image = cv2.rectangle(image, (_box[0], _box[1]), (_box[2], _box[3]),
-                              [30, 15, 255], 1)
+                              [30, 15, 255], thickness)
     return image

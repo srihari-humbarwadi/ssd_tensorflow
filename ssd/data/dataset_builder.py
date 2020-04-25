@@ -9,11 +9,13 @@ class DatasetBuilder:
     def __init__(self, split, config):
         self._dataset = None
         self._split = split
+        self._backbone = config['backbone']
         self._label_encoder = LabelEncoder(config)
         self._input_height = config['image_height']
         self._input_width = config['image_width']
         self._batch_size = config['batch_size']
         self._tfrecords = tf.data.Dataset.list_files(config['tfrecords_' + split])
+        self._augment_val_dataset = config['augment_val_dataset']
         self._random_brightness = config['random_brightness']
         self._random_contrast = config['random_contrast']
         self._random_saturation = config['random_saturation']
@@ -52,7 +54,7 @@ class DatasetBuilder:
 
 
     def _augment_data(self, image, boxes):
-        if self._split == 'val':
+        if self._split == 'val' and not self._augment_val_dataset:
             return image, boxes
         image = image / 255.0
         if self._random_flip_horizonal:
@@ -101,7 +103,10 @@ class DatasetBuilder:
     def _parse_and_create_label(self, example_proto):
         image, boxes, classes = self._parse_example(example_proto)
         image, boxes = self._augment_data(image, boxes)
-        image = (image - 127.5) / 127.5
+        
+        if 'resnet' in self._backbone:
+            image = (image - 127.5) / 127.5
+        
         boxes_xywh = convert_to_xywh(boxes)
         label = self._label_encoder.encode_sample(boxes_xywh, classes)
         return image, label
