@@ -21,6 +21,7 @@ class SSDModel(tf.keras.Model):
         self._feature_extractors = FeatureExtractors()
         self._decode_predictions = DecodePredictions(config)
         self._freeze_bn = config['freeze_bn']
+        self._l2_regularization = config['l2_regularization']
         self._network = self._build_network()
 
     def compile(self, loss_fn, optimizer, **kwargs):
@@ -143,9 +144,19 @@ class SSDModel(tf.keras.Model):
             _y = Reshape([-1, output_shape[-1]])(_y)
             predictions.append(_y)
         predictions = Concatenate(axis=1)(predictions)
-        return tf.keras.Model(inputs=[image],
-                              outputs=[predictions],
-                              name='ssd_network')
+        model = tf.keras.Model(inputs=[image],
+                               outputs=[predictions],
+                               name='ssd_network')
+
+        if self._l2_regularization:
+            regularizer = tf.keras.regularizers.l2(self._l2_regularization)
+            for layer in model.layers[:-(self._num_feature_maps+1)]:
+                if isinstance(layer, Conv2D):
+                    if hasattr(layer, 'kernel'):
+                        print(layer.name)
+                        layer.add_loss(lambda: regularizer(layer.kernel))
+
+        return model
 
     def get_inference_network(self):
         image = self._network.input

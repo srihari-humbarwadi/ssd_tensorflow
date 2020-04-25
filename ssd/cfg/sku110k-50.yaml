@@ -43,7 +43,7 @@ tfrecords_test: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/test*
 model_dir: gs://ssd_eu/
 batch_size: 3
 base_lr: 0.00002
-l2_regularization: No
+l2_regularization: 0.0001
 epochs: 500
 patience: 501
 cache_dataset_in_memory: Yes
