@@ -1,3 +1,5 @@
+import os
+
 import tensorflow as tf
 
 
@@ -9,10 +11,10 @@ class CallbackBuilder:
 
     def get_callbacks(self):
         callbacks_list = [
-            tf.keras.callbacks.TensorBoard(log_dir=self._model_dir + 'tensorboard'),
+            tf.keras.callbacks.TensorBoard(log_dir=os.path.join(self._model_dir, 'tensorboard')),
             tf.keras.callbacks.ModelCheckpoint(
-                filepath=self._model_dir +
-                'checkpoints/ssd_weights_{}'.format(self._name),
+                filepath=os.path.join(self._model_dir,
+                                      'checkpoints/{}_ssd_weights'.format(self._name)),
                 monitor='val_loss',
                 save_best_only=True,
                 save_weights_only=True,
