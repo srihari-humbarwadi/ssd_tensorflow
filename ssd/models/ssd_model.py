@@ -3,6 +3,7 @@ from tensorflow.keras.layers import (BatchNormalization, Concatenate, Conv2D,
                                      ReLU, Reshape)
 
 from ssd.layers.decode_predictions import DecodePredictions
+from ssd.losses.loss_utils import get_scaled_losses, reduce_losses
 from ssd.models.feature_extractors import FeatureExtractors
 
 
@@ -33,43 +34,52 @@ class SSDModel(tf.keras.Model):
         is_training = training and (not self._freeze_bn)
         return self._network(x, training=is_training)
 
-    @tf.function
     def train_step(self, data):
         images, y_true = data[0], data[1]
 
         with tf.GradientTape() as tape:
             y_pred = self(images, training=True)
-            loss = self.loss_fn(y_true, y_pred)
-            cls_loss = loss[0]
-            loc_loss = loss[1]
-            total_loss = tf.reduce_sum(loss, axis=0)
-        gradients = tape.gradient(total_loss, self.trainable_variables)
+            loss_values = self.loss_fn(y_true, y_pred)
+            cls_loss = loss_values[0]
+            loc_loss = loss_values[1]
+
+            loss = cls_loss + loc_loss
+            regularization_losses = self.losses
+
+            _scaled_losses = get_scaled_losses(loss, regularization_losses)
+
+        gradients = tape.gradient(_scaled_losses, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         loss_dict = {
             'cls_loss': cls_loss,
             'loc_loss': loc_loss,
-            'loss': total_loss
+            'loss': loss,
+            'l2_reg': regularization_losses
         }
-        return loss_dict
+        return reduce_losses(loss_dict)
 
     def test_step(self, data):
         images, y_true = data[0], data[1]
 
-        y_pred = self.call(images, training=False)
-        loss = self.loss_fn(y_true, y_pred)
-        cls_loss = loss[0]
-        loc_loss = loss[1]
-        total_loss = tf.reduce_sum(loss, axis=0)
+        y_pred = self(images, training=True)
+        loss_values = self.loss_fn(y_true, y_pred)
+        cls_loss = loss_values[0]
+        loc_loss = loss_values[1]
+
+        loss = cls_loss + loc_loss
+        regularization_losses = self.losses
+
+        _scaled_losses = get_scaled_losses(loss, regularization_losses)
 
         loss_dict = {
             'cls_loss': cls_loss,
             'loc_loss': loc_loss,
-            'loss': total_loss
+            'loss': loss,
+            'l2_reg': regularization_losses
         }
-        return loss_dict
+        return reduce_losses(loss_dict)
 
-    @tf.function
     def predict_step(self, data):
         images = data[0]
         predictions = self.call(images, training=False)
@@ -105,6 +115,13 @@ class SSDModel(tf.keras.Model):
                 num_default_boxes = len(self._aspect_ratios[i]) + 1  # 1 addition default box for 1:1 ratio
                 output_shape[0] += grid_locations * num_default_boxes
             return output_shape
+
+        def add_l2_regularization(layer):
+            l2_reg = tf.keras.regularizers.l2(self._l2_regularization)
+
+            def _add_l2_regularization():
+                return l2_reg(layer.kernel)
+            return _add_l2_regularization
 
         input_shape = [self._input_height, self._input_width, 3]
         backbone, feature_maps = self._feature_extractors.model_fns[self._backbone](input_shape)
@@ -149,12 +166,10 @@ class SSDModel(tf.keras.Model):
                                name='ssd_network')
 
         if self._l2_regularization:
-            regularizer = tf.keras.regularizers.l2(self._l2_regularization)
-            for layer in model.layers[:-(self._num_feature_maps+1)]:
+            for layer in model.layers:
                 if isinstance(layer, Conv2D):
                     if hasattr(layer, 'kernel'):
-                        print(layer.name)
-                        layer.add_loss(lambda: regularizer(layer.kernel))
+                        layer.add_loss(add_l2_regularization(layer))
 
         return model
 

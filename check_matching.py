@@ -1,5 +1,7 @@
 import logging
+import os
 import pprint
+import sys
 
 import tensorflow as tf
 from tqdm import tqdm
@@ -15,7 +17,10 @@ logger = tf.get_logger()
 logger.setLevel(logging.INFO)
 
 if __name__ == '__main__':
-    config = load_config('ssd/cfg/sku110k.yaml')
+    config = load_config(sys.argv[1])
+    save_dir = 'assets/matched_default_boxes/'
+    os.system('rm assets/matched_default_boxes/*')
+    
     logger.info('\n\nconfig: {}\n'.format(config))
 
     train_dataset = DatasetBuilder('train', config)
@@ -25,7 +30,6 @@ if __name__ == '__main__':
         matched_boxes = []
         for i in tqdm(range(images.shape[0])):
             image = images[i]
-            save_dir = 'assets/matched_default_boxes/'
             image_name = save_dir + '{}.png'.format(i+1)
             image = image * 127.5 + 127.5
             decoded_boxes, decoded_cls_ids, _ = DecodePredictions(config)(label[i:i+1])

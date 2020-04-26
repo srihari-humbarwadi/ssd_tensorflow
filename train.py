@@ -1,7 +1,7 @@
-from glob import glob
 import logging
 import os
 from pprint import pprint
+import shutil
 import sys
 
 import tensorflow as tf
@@ -44,10 +44,13 @@ if config['clear_previous_runs']:
     if config['use_tpu']:
         logger.warning('Skipping GCS Bucket')
     else:
-        [os.remove(file) for file in glob(config['model_dir'] + '/checkpoints/*')]
-        [os.remove(file) for file in glob(config['model_dir'] + '/tensorboard/*')]
-        logger.info('Cleared existing model files')
-        
+        try:
+            shutil.rmtree(os.path.join(config['model_dir']))
+            logger.info('Cleared existing model files\n')
+        except FileNotFoundError:
+            logger.warning('mode_dir not found!')
+            os.mkdir(config['model_dir'])
+
 with strategy.scope():
     train_dataset = DatasetBuilder('train', config)
     val_dataset = DatasetBuilder('val', config)
@@ -71,8 +74,7 @@ model.fit(train_dataset.dataset,
           validation_steps=val_steps,
           callbacks=callbacks_list)
 
-
 with strategy.scope():
-    save_path = config['model_dir'] + 'final_weights'
+    save_path = os.path.join(config['model_dir'], 'final_weights', 'ssd_weights')
     logger.info('Saving final weights at in {}'.format(save_path))
     model.save_weights(save_path)
