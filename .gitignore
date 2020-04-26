@@ -5,3 +5,4 @@ ssd/data/dataset_files/sku110k
 **zip
 **csv
 calculate_default_box_dims.ipynb
+**model_files
