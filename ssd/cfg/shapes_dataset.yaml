@@ -1,12 +1,11 @@
 image_height: 300
-image_width: 360
+image_width: 300
 num_classes: 2
 classes: [circle, rectangle]
 
 clip_default_boxes: No
 scales: [0.1, 0.2, 0.37, 0.54, 0.71, 0.88, 1.05]
-# feature_shapes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
-feature_shapes: [[38, 45], [19, 23], [10, 12], [5, 6], [3, 4], [1, 2]]
+feature_shapes: [[38, 38], [19, 19], [10, 10], [5, 5], [3, 3], [1, 1]]
 aspect_ratios:
   [
     [0.5, 1, 2],
@@ -14,59 +13,58 @@ aspect_ratios:
     [0.333, 0.5, 1, 2, 3],
     [0.333, 0.5, 1, 2, 3],
     [0.5, 1, 2],
-    [0.5, 1, 2]
+    [0.5, 1, 2],
   ]
 loc_variance: [0.1, 0.1, 0.2, 0.2]
 
 match_iou_threshold: 0.5
-max_detections: 20
+max_detections: 10
 
 nms_iou_threshold: 0.5
-score_threshold: 0.5
+score_threshold: 0.45
 
 loc_loss_weight: 1.0
 cls_loss_weight: 1.0
 negatives_ratio: 3
 smooth_l1_delta: 1.0
 
-rescale_pixels: Yes
-pixel_range: [-1, 1]
 backbone: resnet_50_v2
-
+freeze_bn: True
 
 train_images: 10000
 val_images: 2500
+
 tfrecords_train: ssd/data/dataset_files/shapes_dataset/train*
 tfrecords_val: ssd/data/dataset_files/shapes_dataset/val*
 
-model_dir: model_files
-batch_size: 4
-base_lr: 0.001
-l2_regularization: No
+model_dir: model_files/
+batch_size: 8
+base_lr: 0.00001
+l2_regularization: 0.0001
 epochs: 10
-patience: 3
-model_dir: model_files
+patience: 4
+
+resume_training: False
 clear_previous_runs: Yes
 
 use_gpu: Yes
 multi_gpu: Yes
 
 use_tpu: No
-tpu_name: 'tfrc-srihari-v3'
+tpu_name: "tfrc-srihari-v3-2"
 
 scale_lr: Yes
 scale_batch_size: Yes
 
+augment_val_dataset: Yes
 random_brightness: Yes
-random_contrast: Yes
-random_hue: Yes
-random_saturation: Yes
-random_flip_horizonal: Yes
+random_contrast: No
+random_saturation: No
+random_flip_horizonal: No
 random_patch: Yes
 
-brightness_max_delta: 25
-contrast_lower: 125
-contrast_upper: 350
-hue_max_delta: 5
-saturation_lower: 125
-saturation_upper: 350
+brightness_max_delta: 0.2
+contrast_lower: 0.5
+contrast_upper: 1.5
+saturation_lower: 0.5
+saturation_upper: 1.5
