@@ -1,11 +1,11 @@
-image_height: 896
-image_width: 896
+image_height: 2048
+image_width: 2048
 num_classes: 1
 classes: [object]
 
 clip_default_boxes: No
-scales: [0.03, 0.05, 0.08, 0.12, 0.15, 0.25, 0.35]
-feature_shapes: [[112, 112], [56, 56], [28, 28], [14, 14], [12, 12], [10, 10]]
+scales: [0.02, 0.06, 0.10, 0.15, 0.20, 0.25, 0.40, 0.50]
+feature_shapes: [[256, 256], [128, 128], [64, 64], [32, 32], [16, 16], [14, 14], [12, 12]]
 aspect_ratios:
   [
     [0.416, 0.553, 0.722, 1.401, 3.131],
@@ -14,10 +14,12 @@ aspect_ratios:
     [0.416, 0.553, 0.722, 1.401, 3.131],
     [0.416, 0.553, 0.722, 1.401, 3.131],
     [0.416, 0.553, 0.722, 1.401, 3.131],
+    [0.416, 0.553, 0.722, 1.401, 3.131],
+
   ]
 loc_variance: [0.1, 0.1, 0.2, 0.2]
 
-match_iou_threshold: 0.45
+match_iou_threshold: 0.5
 max_detections: 1000
 
 nms_iou_threshold: 0.5
@@ -30,7 +32,7 @@ smooth_l1_delta: 1.0
 
 rescale_pixels: Yes
 pixel_range: [-1, 1]
-backbone: efficient_net_b0
+backbone: resnet_50_v2
 freeze_bn: True
 
 train_images: 8300
@@ -40,22 +42,22 @@ tfrecords_train: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
 tfrecords_val: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/val*
 tfrecords_test: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/test*
 
-model_dir: gs://ssd_eu/b0/
-batch_size: 3
-base_lr: 0.00001
-l2_regularization: 0.0001
-epochs: 450
-patience: 500
+model_dir: gs://ssd_eu/models/resnet_50_2048_sku110k
+batch_size: 1
+base_lr: 0.0002
+l2_regularization: 0.0006
+epochs: 250
+patience: 250
 cache_dataset_in_memory: Yes
 
 resume_training: Yes
-clear_previous_runs: No
+clear_previous_runs: Yes
 
 use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: 'tfrc-srihari-v3-3'
+tpu_name: 'tfrc-srihari-v3-1'
 
 scale_lr: Yes
 scale_batch_size: Yes
@@ -67,7 +69,7 @@ random_saturation: No
 random_flip_horizonal: No
 random_patch: Yes
 
-brightness_max_delta: 0.2
+brightness_max_delta: 0.35
 contrast_lower: 0.5
 contrast_upper: 1.5
 saturation_lower: 0.5

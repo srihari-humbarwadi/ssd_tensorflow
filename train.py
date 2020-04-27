@@ -57,15 +57,17 @@ with strategy.scope():
 
     loss_fn = MultiBoxLoss(config)
     optimizer = tf.optimizers.Adam(learning_rate=lr)
-    callbacks_list = CallbackBuilder('896', config).get_callbacks()
+    callbacks_list = CallbackBuilder('480', config).get_callbacks()
 
     model = SSDModel(config)
     model.compile(loss_fn=loss_fn, optimizer=optimizer)
     if config['resume_training']:
-        latest_checkpoint = tf.train.latest_checkpoint(config['model_dir'] + 'checkpoints')
-        logger.info('Loading weights from {}'.format(latest_checkpoint))
-        model.load_weights(latest_checkpoint)
-
+        latest_checkpoint = tf.train.latest_checkpoint(os.path.join(config['model_dir'] , 'checkpoints'))
+        if latest_checkpoint is not None:
+            logger.info('Loading weights from {}'.format(latest_checkpoint))
+            model.load_weights(latest_checkpoint)
+        else:
+            logger.warning('No weights found, training from scratch')
 
 model.fit(train_dataset.dataset,
           epochs=epochs,

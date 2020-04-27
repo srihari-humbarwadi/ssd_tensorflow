@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 
 
+
 class CallbackBuilder:
     def __init__(self, name, config):
         self._name = name
@@ -14,9 +15,16 @@ class CallbackBuilder:
             tf.keras.callbacks.TensorBoard(log_dir=os.path.join(self._model_dir, 'tensorboard')),
             tf.keras.callbacks.ModelCheckpoint(
                 filepath=os.path.join(self._model_dir,
-                                      'checkpoints/{}_ssd_weights'.format(self._name)),
+                                      'best_weights/{}_ssd_weights'.format(self._name) + '_epoch_{epoch}'),
                 monitor='val_loss',
                 save_best_only=True,
+                save_weights_only=True,
+                verbose=1),
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=os.path.join(self._model_dir,
+                                      'checkpoints/{}_ssd_weights'.format(self._name) + '_epoch_{epoch}'),
+                monitor='val_loss',
+                save_best_only=False,
                 save_weights_only=True,
                 verbose=1),
             tf.keras.callbacks.EarlyStopping(

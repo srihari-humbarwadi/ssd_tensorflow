@@ -26,6 +26,7 @@ class DatasetBuilder:
         self._contrast_upper = config['contrast_upper']
         self._saturation_lower = config['saturation_lower']
         self._saturation_upper = config['saturation_upper']
+        self._cache_dataset_in_memory = config['cache_dataset_in_memory']
         self._build_tfrecord_dataset()
 
     def _random_flip_horizontal_fn(self, image, boxes):
@@ -117,6 +118,8 @@ class DatasetBuilder:
             cycle_length=8,
             block_length=32,
             num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        if self._cache_dataset_in_memory:
+            dataset = dataset.cache()
         dataset = dataset.shuffle(512)
         dataset = dataset.map(self._parse_and_create_label,
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
