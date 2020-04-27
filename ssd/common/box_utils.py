@@ -28,3 +28,23 @@ def rescale_boxes(boxes, original_dims, new_dims):
         boxes[..., 2] * scale[1],
         boxes[..., 3] * scale[0]
     ], axis=-1)
+
+def relative_to_absolute(boxes, image_dims):
+    boxes = tf.cast(boxes, dtype=tf.float32)
+    image_dims = tf.cast(image_dims, dtype=tf.float32)
+    return tf.stack([
+        boxes[..., 0] * image_dims[1],
+        boxes[..., 1] * image_dims[0],
+        boxes[..., 2] * image_dims[1],
+        boxes[..., 3] * image_dims[0]
+    ], axis=-1)
+
+def absolute_to_relative(boxes, image_dims):
+    boxes = tf.cast(boxes, dtype=tf.float32)
+    image_dims = tf.cast(image_dims, dtype=tf.float32)
+    return tf.stack([
+        boxes[..., 0] / image_dims[1],
+        boxes[..., 1] / image_dims[0],
+        boxes[..., 2] / image_dims[1],
+        boxes[..., 3] / image_dims[0]
+    ], axis=-1)
