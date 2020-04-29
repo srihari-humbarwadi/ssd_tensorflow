@@ -4,15 +4,6 @@ from abc import ABC, abstractmethod
 class Parser(ABC):
     def __init__(self, download_path):
         self._download_path = download_path
-
-        {
-            'image': None,
-            'label': {
-                'boxes': None,
-                'classes': None
-            }
-        }
-
         self._data = {
             'train': [],
             'val': [],
