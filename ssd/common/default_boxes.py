@@ -2,6 +2,9 @@ import tensorflow as tf
 import numpy as np
 
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
+
 class DefaultBoxes:
 
     def __init__(self, config):
@@ -13,23 +16,23 @@ class DefaultBoxes:
         self._strides = tf.constant(
             [[np.ceil(config['image_height'] / x[0]),
               np.ceil(config['image_width'] / x[1])]
-             for x in config['feature_shapes']], dtype=tf.float32)
+             for x in config['feature_shapes']], dtype=_policy.compute_dtype)
         self._aspect_ratios = config['aspect_ratios']
         self.clip_default_boxes = config['clip_default_boxes']
         self._default_boxes = []
         self._build_default_boxes()
 
     def _get_centers(self, feature_size, stride):
-        rx = tf.range(feature_size[1], dtype=tf.float32)
-        ry = tf.range(feature_size[0], dtype=tf.float32)
+        rx = tf.range(feature_size[1], dtype=_policy.compute_dtype)
+        ry = tf.range(feature_size[0], dtype=_policy.compute_dtype)
         centers = tf.stack(tf.meshgrid((0.5 + rx) * stride[1],
                                        (0.5 + ry) * stride[0]), axis=-1)
-        return tf.cast(centers, dtype=tf.float32)
+        return tf.cast(centers, dtype=_policy.compute_dtype)
 
     def _get_dims(self, scale, ratio):
         h = self._input_height * scale / np.sqrt(ratio)
         w = self._input_width * scale * np.sqrt(ratio)
-        wh = tf.constant([w, h], dtype=tf.float32, shape=[1, 1, 2])
+        wh = tf.constant([w, h], dtype=_policy.compute_dtype, shape=[1, 1, 2])
         return wh
 
     def _build_default_boxes(self):
@@ -55,7 +58,7 @@ class DefaultBoxes:
                 self._input_height * np.sqrt(sl * sl_next),
                 self._input_width * np.sqrt(sl * sl_next)
             ],
-                dtype=tf.float32,
+                dtype=_policy.compute_dtype,
                 shape=[1, 1, 2])
             extra_wh = tf.tile(extra_wh,
                                multiples=[feature_size[0], feature_size[1], 1])
@@ -74,4 +77,3 @@ class DefaultBoxes:
     @property
     def boxes(self):
         return self._default_boxes
-

@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
 
 class LocLoss(tf.losses.Loss):
     def __init__(self, delta, **kwargs):
@@ -10,9 +12,10 @@ class LocLoss(tf.losses.Loss):
 #                                          reduction=tf.losses.Reduction.NONE)
 
     def call(self, y_true, y_pred):
-#         loss = self.smooth_l1(y_true, y_pred)
+        #         loss = self.smooth_l1(y_true, y_pred)
         loss = tf.compat.v1.losses.huber_loss(labels=y_true, predictions=y_pred, reduction='none')
         loss = tf.reduce_sum(loss, axis=-1)
+        loss = tf.cast(loss, dtype=_policy.compute_dtype)
         return loss
 
 
@@ -39,7 +42,7 @@ class ClsLoss(tf.losses.Loss):
         return loss
 
     def call(self, y_true, y_pred):
-        background_mask = tf.cast(tf.equal(y_true[:, :, 0], 1.0), dtype=tf.float32)
+        background_mask = tf.cast(tf.equal(y_true[:, :, 0], 1.0), dtype=_policy.compute_dtype)
         num_positives = tf.reduce_sum(1 - background_mask, axis=-1)
         negatives_to_keep = tf.cast(self._negatives_ratio * num_positives, dtype=tf.int32)
 
@@ -49,6 +52,7 @@ class ClsLoss(tf.losses.Loss):
         postive_loss = self._mine_positives(crossentropy, background_mask)
 
         loss = tf.reduce_sum(postive_loss + negative_loss, axis=-1)
+        loss = tf.cast(loss, dtype=_policy.compute_dtype)
         return loss
 
 
@@ -69,7 +73,7 @@ class MultiBoxLoss(tf.losses.Loss):
         y_pred_loc = y_pred[:, :, :4]
         y_pred_cls = y_pred[:, :, 4:]
 
-        background_mask = tf.cast(tf.equal(y_true_cls[:, :, 0], 1.0), dtype=tf.float32)
+        background_mask = tf.cast(tf.equal(y_true_cls[:, :, 0], 1.0), dtype=_policy.compute_dtype)
         num_positives = tf.reduce_sum(1 - background_mask, axis=-1)
 
         cls_loss = self._cls_loss(y_true_cls, y_pred_cls)
@@ -77,7 +81,7 @@ class MultiBoxLoss(tf.losses.Loss):
         loc_loss = self._loc_loss(y_true_loc, y_pred_loc)
         loc_loss = tf.where(tf.not_equal(background_mask, 1.0), loc_loss, 0.0)
         loc_loss = tf.reduce_sum(loc_loss, axis=-1)
-        
+
         cls_loss = tf.math.divide_no_nan(cls_loss, num_positives)
         loc_loss = tf.math.divide_no_nan(loc_loss, num_positives)
 

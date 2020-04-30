@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
 
 def _safe_mean(losses):
     num_values = tf.cast(tf.size(losses), dtype=tf.float32)

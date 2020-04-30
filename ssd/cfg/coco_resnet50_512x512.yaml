@@ -117,10 +117,10 @@ freeze_bn: No
 train_images: 117266
 val_images: 4952
 
-tfrecords_train: ssd/data/dataset_files/coco/train*
-tfrecords_val: ssd/data/dataset_files/coco/val*
+tfrecords_train: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
+tfrecords_val: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
 
-model_dir: model_files/coco/resnet_50_512x512
+model_dir: gs://ssd_eu/tfrecord_datasets/model_files/coco/resnet_50_512x512
 
 batch_size: 8
 base_lr: 0.00005
@@ -132,12 +132,12 @@ cache_dataset_in_memory: No
 resume_training: No
 clear_previous_runs: Yes
 
-use_mixed_precision: No
+use_mixed_precision: Yes
 
-use_gpu: Yes
-multi_gpu: Yes
+use_gpu: No
+multi_gpu: No
 
-use_tpu: No
+use_tpu: Yes
 tpu_name: "tfrc-srihari-v3-1"
 
 scale_lr: Yes

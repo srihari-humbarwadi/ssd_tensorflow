@@ -3,13 +3,15 @@ import tensorflow as tf
 from ssd.common.box_matcher import BoxMatcher
 from ssd.common.default_boxes import DefaultBoxes
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
 
 class LabelEncoder:
 
     def __init__(self, config):
         self._default_boxes = DefaultBoxes(config).boxes
         self._loc_variance = tf.constant(config['loc_variance'],
-                                         dtype=tf.float32)
+                                         dtype=_policy.compute_dtype)
         self._num_classes = config['num_classes']
         self._box_matcher = BoxMatcher(config['match_iou_threshold'])
 
@@ -23,7 +25,7 @@ class LabelEncoder:
         return loc_target
 
     def encode_sample(self, gt_boxes, cls_ids):
-        cls_ids = tf.cast(cls_ids + 1, dtype=tf.float32)  # add background class with cls_id = 0
+        cls_ids = tf.cast(cls_ids + 1, dtype=_policy.compute_dtype)  # add background class with cls_id = 0
 
         matched_gt_idx, positive_mask = self._box_matcher(
             self._default_boxes, gt_boxes)
@@ -34,6 +36,6 @@ class LabelEncoder:
         cls_target = tf.cast(matched_gt_cls_ids * positive_mask, dtype=tf.int32)
         cls_target = tf.one_hot(cls_target,
                                 depth=self._num_classes + 1,
-                                dtype=tf.float32)
+                                dtype=_policy.compute_dtype)
         label = tf.concat([loc_target, cls_target], axis=-1)
         return label

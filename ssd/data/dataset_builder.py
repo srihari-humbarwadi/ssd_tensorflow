@@ -3,6 +3,8 @@ import tensorflow as tf
 from ssd.common.box_utils import convert_to_xywh, rescale_boxes, absolute_to_relative, swap_xy, relative_to_absolute
 from ssd.common.label_encoder import LabelEncoder
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
 
 class DatasetBuilder:
 
@@ -33,7 +35,7 @@ class DatasetBuilder:
         self._build_tfrecord_dataset()
 
     def _random_flip_horizontal_fn(self, image, boxes):
-        w = tf.cast(tf.shape(image)[1], dtype=tf.float32)
+        w = tf.cast(tf.shape(image)[1], dtype=_policy.compute_dtype)
         if tf.random.uniform(()) > 0.5:
             image = tf.image.flip_left_right(image)
             boxes = tf.stack(
@@ -54,11 +56,11 @@ class DatasetBuilder:
         return tf.clip_by_value(image, 0.0, 1)
 
     def _filter_and_adjust_labels(self, crop_box, boxes, classes):
-        boxes = tf.cast(boxes, dtype=tf.float32)
-        crop_box = tf.cast(crop_box, dtype=tf.float32)
+        boxes = tf.cast(boxes, dtype=_policy.compute_dtype)
+        crop_box = tf.cast(crop_box, dtype=_policy.compute_dtype)
 
         offsets = tf.concat([
-            crop_box[:, :2] - boxes[:, 2:], 
+            crop_box[:, :2] - boxes[:, 2:],
             boxes[:, :2] - crop_box[:, 2:],
         ], axis=-1)
 
@@ -127,7 +129,7 @@ class DatasetBuilder:
         classes = tf.sparse.to_dense(parsed_example['classes'])
 
         image = tf.io.decode_image(parsed_example['image'], channels=3)
-        image = tf.cast(image, dtype=tf.float32)
+        image = tf.cast(image, dtype=_policy.compute_dtype)
         image.set_shape([None, None, 3])
 
         boxes = tf.stack([
@@ -136,19 +138,19 @@ class DatasetBuilder:
             tf.sparse.to_dense(parsed_example['xmaxs']),
             tf.sparse.to_dense(parsed_example['ymaxs']),
         ], axis=-1)
-
+        boxes = tf.cast(boxes, dtype=_policy.compute_dtype)
         return image, boxes, classes
 
     def _parse_and_create_label(self, example_proto):
         image, boxes, classes = self._parse_example(example_proto)
-        original_dims = tf.cast(tf.shape(image), dtype=tf.float32)
-        boxes =  tf.stack([
+        original_dims = tf.cast(tf.shape(image), dtype=_policy.compute_dtype)
+        boxes = tf.stack([
             tf.clip_by_value(boxes[..., 0], 0, original_dims[1]),
             tf.clip_by_value(boxes[..., 1], 0, original_dims[0]),
             tf.clip_by_value(boxes[..., 2], 0, original_dims[1]),
             tf.clip_by_value(boxes[..., 3], 0, original_dims[0])
         ], axis=-1)
-        
+
         image, boxes, classes = self._augment_data(image, boxes, classes)
         new_dims = tf.shape(image)
         image = tf.image.resize(image,

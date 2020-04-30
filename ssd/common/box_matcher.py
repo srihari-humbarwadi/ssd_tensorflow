@@ -2,6 +2,8 @@ import tensorflow as tf
 
 from ssd.common.box_utils import convert_to_corners
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
 
 class BoxMatcher:
 
@@ -9,8 +11,8 @@ class BoxMatcher:
         self._iou_threshold = iou_threshold
 
     def _compute_iou(self, boxes1, boxes2):
-        boxes1 = tf.cast(boxes1, dtype=tf.float32)
-        boxes2 = tf.cast(boxes2, dtype=tf.float32)
+        boxes1 = tf.cast(boxes1, dtype=_policy.compute_dtype)
+        boxes2 = tf.cast(boxes2, dtype=_policy.compute_dtype)
 
         boxes1_t = convert_to_corners(boxes1)
         boxes2_t = convert_to_corners(boxes2)
@@ -33,5 +35,5 @@ class BoxMatcher:
         max_iou = tf.reduce_max(iou_matrix, axis=1)
         matched_gt_idx = tf.argmax(iou_matrix, axis=1)
         positive_mask = tf.cast(tf.greater_equal(max_iou, self._iou_threshold),
-                                dtype=tf.float32)
+                                dtype=_policy.compute_dtype)
         return matched_gt_idx, positive_mask
