@@ -133,18 +133,18 @@ class SSDModel(tf.keras.Model):
         x = _conv_block(x, 256, 3, 2, 'same')
         feature_maps.append(x)
 
+        x = _conv_block(x, 128, 1, 1, 'valid')
+        x = _conv_block(x, 256, 3, 1, 'valid')
+        feature_maps.append(x)
+
+        x = _conv_block(x, 128, 1, 1, 'valid')
+        x = _conv_block(x, 256, 3, 1, 'valid')
+        feature_maps.append(x)
+        
         if self._num_feature_maps == 7:
-            x = _conv_block(x, 256, 1, 1, 'same')
-            x = _conv_block(x, 256, 3, 2, 'same')
+            x = _conv_block(x, 256, 1, 1, 'valid')
+            x = _conv_block(x, 256, 4, 1, 'valid')
             feature_maps.append(x)
-
-        x = _conv_block(x, 128, 1, 1, 'valid')
-        x = _conv_block(x, 256, 3, 1, 'valid')
-        feature_maps.append(x)
-
-        x = _conv_block(x, 128, 1, 1, 'valid')
-        x = _conv_block(x, 256, 3, 1, 'valid')
-        feature_maps.append(x)
 
         predictions = []
         output_shape = _comput_output_shapes()
