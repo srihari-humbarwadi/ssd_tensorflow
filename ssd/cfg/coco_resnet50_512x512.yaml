@@ -121,8 +121,9 @@ tfrecords_train: ssd/data/dataset_files/coco/train*
 tfrecords_val: ssd/data/dataset_files/coco/val*
 
 model_dir: model_files/coco/resnet_50_512x512
-batch_size: 4
-base_lr: 0.00002
+
+batch_size: 8
+base_lr: 0.00005
 l2_regularization: 0.0004
 epochs: 200
 patience: 200
@@ -131,8 +132,10 @@ cache_dataset_in_memory: No
 resume_training: No
 clear_previous_runs: Yes
 
+use_mixed_precision: No
+
 use_gpu: Yes
-multi_gpu: No
+multi_gpu: Yes
 
 use_tpu: No
 tpu_name: "tfrc-srihari-v3-1"
@@ -140,7 +143,7 @@ tpu_name: "tfrc-srihari-v3-1"
 scale_lr: Yes
 scale_batch_size: Yes
 
-augment_val_dataset: Yes
+augment_val_dataset: No
 random_brightness: Yes
 random_contrast: No
 random_saturation: No
