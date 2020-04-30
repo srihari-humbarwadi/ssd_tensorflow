@@ -35,14 +35,15 @@ def calculate_feature_shapes(input_height, input_width, num_feature_maps):
     fw = input_width
     feature_shapes = []
 
-    for _ in range(num_feature_maps):
+    for _ in range(6):
         fh = int(np.ceil(fh / 2))
         fw = int(np.ceil(fw / 2))
         feature_shapes.append([fh, fw])
 
-    for _ in range(2):
-        fh = fh - 3 + 1
-        fw = fw - 3 + 1
+    for i in range(num_feature_maps - 4):
+        k_size = 3 if i < 2 else 4
+        fh = fh - k_size + 1
+        fw = fw - k_size + 1
         feature_shapes.append([fh, fw])
 
     return feature_shapes[-num_feature_maps:]
@@ -55,3 +56,5 @@ if __name__ == '__main__':
     input_width = args.image_width
     num_feature_maps = args.num_feature_maps
     print(calculate_feature_shapes(input_height, input_width, num_feature_maps))
+    
+    
