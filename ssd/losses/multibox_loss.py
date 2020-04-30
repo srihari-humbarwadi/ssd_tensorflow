@@ -6,11 +6,13 @@ class LocLoss(tf.losses.Loss):
         super(LocLoss, self).__init__(reduction=tf.losses.Reduction.NONE,
                                       name='loc_loss',
                                       **kwargs)
-        self.smooth_l1 = tf.losses.Huber(delta=delta,
-                                         reduction=tf.losses.Reduction.NONE)
+#         self.smooth_l1 = tf.losses.Huber(delta=delta,
+#                                          reduction=tf.losses.Reduction.NONE)
 
     def call(self, y_true, y_pred):
-        loss = self.smooth_l1(y_true, y_pred)
+#         loss = self.smooth_l1(y_true, y_pred)
+        loss = tf.compat.v1.losses.huber_loss(labels=y_true, predictions=y_pred, reduction='none')
+        loss = tf.reduce_sum(loss, axis=-1)
         return loss
 
 
