@@ -2,7 +2,10 @@
 **pyc
 **__pycache__
 ssd/data/dataset_files/sku110k
+ssd/data/dataset_files/coco
 **zip
 **csv
 calculate_default_box_dims.ipynb
 **model_files
+**dataset_downloads
+assets/matched_default_boxes

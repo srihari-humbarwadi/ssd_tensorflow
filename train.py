@@ -48,8 +48,7 @@ if config['clear_previous_runs']:
             shutil.rmtree(os.path.join(config['model_dir']))
             logger.info('Cleared existing model files\n')
         except FileNotFoundError:
-            logger.warning('mode_dir not found!')
-            os.mkdir(config['model_dir'])
+            logger.warning('model_dir not found!')
 
 with strategy.scope():
     train_dataset = DatasetBuilder('train', config)
@@ -62,7 +61,7 @@ with strategy.scope():
     model = SSDModel(config)
     model.compile(loss_fn=loss_fn, optimizer=optimizer)
     if config['resume_training']:
-        latest_checkpoint = tf.train.latest_checkpoint(os.path.join(config['model_dir'] , 'checkpoints'))
+        latest_checkpoint = tf.train.latest_checkpoint(os.path.join(config['model_dir'], 'checkpoints'))
         if latest_checkpoint is not None:
             logger.info('Loading weights from {}'.format(latest_checkpoint))
             model.load_weights(latest_checkpoint)

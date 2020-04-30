@@ -61,7 +61,7 @@ random_brightness: Yes
 random_contrast: No
 random_saturation: No
 random_flip_horizonal: No
-random_patch: Yes
+random_patch: No
 
 brightness_max_delta: 0.2
 contrast_lower: 0.5
