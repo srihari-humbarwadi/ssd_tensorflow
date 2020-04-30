@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def imshow(image):
-    plt.figure(figsize=(16, 16))
+def imshow(image, figsize=(6, 6)):
+    plt.figure(figsize=figsize)
     plt.imshow(image)
 
 
