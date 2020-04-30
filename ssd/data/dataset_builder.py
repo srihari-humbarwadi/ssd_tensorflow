@@ -97,7 +97,7 @@ class DatasetBuilder:
 
     def _augment_data(self, image, boxes, classes):
         if self._split == 'val' and not self._augment_val_dataset:
-            return image, boxes
+            return image, boxes, classes
         image = image / 255.0
         if self._random_patch:
             image, boxes, classes = self._random_patch_fn(image, boxes, classes)
