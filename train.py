@@ -21,13 +21,32 @@ logger.info('version: {}'.format(tf.__version__))
 
 config = load_config(sys.argv[1])
 
+if config['use_mixed_precision']:
+    if config['use_tpu']:
+        dtype = 'mixed_bfloat16'
+    elif config['use_gpu']:
+        #         dtype = 'mixed_float16' # todo: implement loss scaling
+        dtype = 'float32'
+    else:
+        dtype = 'float32'
+else:
+    dtype = 'float32'
+
+policy = tf.keras.mixed_precision.experimental.Policy(dtype)
+tf.keras.mixed_precision.experimental.set_policy(policy)
+
+logger.info('\nCompute dtype: {}'.format(policy.compute_dtype))
+logger.info('Variable dtype: {}'.format(policy.variable_dtype))
+
 strategy = get_strategy(config)
 
 epochs = config['epochs']
 
-lr = config['base_lr']
-lr = config['base_lr']
-lr = lr if not config['scale_lr'] else lr * strategy.num_replicas_in_sync
+lr_values = list(config['lr_values'])
+if config['scale_lr']:
+    for i in range(len(lr_values)):
+        lr_values[i] *= strategy.num_replicas_in_sync
+config['lr_values'] = lr_values
 
 batch_size = config['batch_size']
 batch_size = batch_size if not config['scale_batch_size'] else batch_size * strategy.num_replicas_in_sync
@@ -55,8 +74,9 @@ with strategy.scope():
     val_dataset = DatasetBuilder('val', config)
 
     loss_fn = MultiBoxLoss(config)
-    optimizer = tf.optimizers.Adam(learning_rate=lr)
-    callbacks_list = CallbackBuilder('480', config).get_callbacks()
+    lr_sched = tf.optimizers.schedules.PiecewiseConstantDecay(config['lr_boundaries'], config['lr_values'])
+    optimizer = tf.optimizers.SGD(lr_sched, momentum=config['optimizer_momentum'])
+    callbacks_list = CallbackBuilder('COCO_', config).get_callbacks()
 
     model = SSDModel(config)
     model.compile(loss_fn=loss_fn, optimizer=optimizer)

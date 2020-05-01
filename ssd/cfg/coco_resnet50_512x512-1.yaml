@@ -103,8 +103,8 @@ loc_variance: [0.1, 0.1, 0.2, 0.2]
 match_iou_threshold: 0.5
 max_detections: 300
 
-nms_iou_threshold: 0.6
-score_threshold: 0.3
+nms_iou_threshold: 0.5
+score_threshold: 0.0001
 
 loc_loss_weight: 1.0
 cls_loss_weight: 1.0
@@ -117,20 +117,23 @@ freeze_bn: No
 train_images: 117266
 val_images: 4952
 
-tfrecords_train: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
-tfrecords_val: gs://ssd_eu/tfrecord_datasets/sku110k_tfrecords/train*
+tfrecords_train: gs://ssd_eu/tfrecord_datasets/coco/train*
+tfrecords_val: gs://ssd_eu/tfrecord_datasets/coco/train*
 
-model_dir: gs://ssd_eu/tfrecord_datasets/model_files/coco/resnet_50_512x512
+model_dir: gs://ssd_eu/model_files/coco/resnet_50_512x512-1
 
-batch_size: 8
-base_lr: 0.00005
+batch_size: 1
+lr_boundaries: [10000, 90000, 180000]
+lr_values: [0.001, 0.0001, 0.00005, 0.00001]
+optimizer_momentum: 0.95
+
 l2_regularization: 0.0004
 epochs: 200
 patience: 200
-cache_dataset_in_memory: No
+cache_dataset_in_memory: Yes
 
-resume_training: No
-clear_previous_runs: Yes
+resume_training: Yes
+clear_previous_runs: No
 
 use_mixed_precision: Yes
 
@@ -138,23 +141,25 @@ use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: "tfrc-srihari-v3-1"
+tpu_name: tfrc-srihari-v3-4
 
 scale_lr: Yes
 scale_batch_size: Yes
 
 augment_val_dataset: No
+random_pad_to_square: Yes
 random_brightness: Yes
-random_contrast: No
-random_saturation: No
+random_contrast: Yes
+random_saturation: Yes
 random_flip_horizonal: No
 random_patch: Yes
 
+max_pad_ratio: 2.5
 brightness_max_delta: 0.2
 contrast_lower: 0.5
 contrast_upper: 1.5
 saturation_lower: 0.5
 saturation_upper: 1.5
-min_obj_covered: 0.1
-area_range: [0.3, 1]
+min_obj_covered: [0.1, 0.3, 0.5, 0.7, 0.9]
+area_range: [0.15, 1]
 aspect_ratio_range: [0.667, 1.334]

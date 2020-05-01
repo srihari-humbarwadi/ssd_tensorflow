@@ -7,6 +7,8 @@ from ssd.losses.loss_utils import get_scaled_losses, reduce_losses
 from ssd.models.feature_extractors import FeatureExtractors
 
 
+_policy = tf.keras.mixed_precision.experimental.global_policy()
+
 class SSDModel(tf.keras.Model):
 
     def __init__(self, config, **kwargs):
@@ -20,7 +22,7 @@ class SSDModel(tf.keras.Model):
         self._backbone = config['backbone']
         self._default_boxs_per_feature_map = [len(x) for x in config['aspect_ratios'][:-1]]
         self._feature_extractors = FeatureExtractors()
-        self._decode_predictions = DecodePredictions(config)
+        self._decode_predictions = DecodePredictions(config, dtype=_policy.compute_dtype)
         self._freeze_bn = config['freeze_bn']
         self._l2_regularization = config['l2_regularization']
         self._network = self._build_network()
@@ -34,6 +36,7 @@ class SSDModel(tf.keras.Model):
         is_training = training and (not self._freeze_bn)
         return self._network(x, training=is_training)
 
+    @tf.function(experimental_compile=True)
     def train_step(self, data):
         images, y_true = data[0], data[1]
 
