@@ -18,6 +18,7 @@ class DatasetBuilder:
         self._batch_size = config['batch_size']
         self._tfrecords = tf.data.Dataset.list_files(config['tfrecords_' + split])
         self._augment_val_dataset = config['augment_val_dataset']
+        self._random_pad_to_square = config['random_pad_to_square']
         self._random_brightness = config['random_brightness']
         self._random_contrast = config['random_contrast']
         self._random_saturation = config['random_saturation']
@@ -30,6 +31,7 @@ class DatasetBuilder:
         self._saturation_upper = config['saturation_upper']
         self._min_obj_covered = config['min_obj_covered']
         self._area_range = config['area_range']
+        self._max_pad_ratio = config['max_pad_ratio']
         self._aspect_ratio_range = config['aspect_ratio_range']
         self._cache_dataset_in_memory = config['cache_dataset_in_memory']
         self._build_tfrecord_dataset()
@@ -58,51 +60,73 @@ class DatasetBuilder:
     def _filter_and_adjust_labels(self, crop_box, boxes, classes):
         boxes = tf.cast(boxes, dtype=_policy.compute_dtype)
         crop_box = tf.cast(crop_box, dtype=_policy.compute_dtype)
-
         offsets = tf.concat([
             crop_box[:, :2] - boxes[:, 2:],
             boxes[:, :2] - crop_box[:, 2:],
         ], axis=-1)
-
         crop_box_width = crop_box[:, 2] - crop_box[:, 0]
         crop_box_height = crop_box[:, 3] - crop_box[:, 1]
-
         adjusted_boxes = tf.stack([
             tf.clip_by_value(boxes[:, 0] - crop_box[:, 0], 0, crop_box_width),
             tf.clip_by_value(boxes[:, 1] - crop_box[:, 1], 0, crop_box_height),
             tf.clip_by_value(boxes[:, 2] - crop_box[:, 0], 0, crop_box_width),
             tf.clip_by_value(boxes[:, 3] - crop_box[:, 1], 0, crop_box_height)
         ], axis=-1)
-
         idx = tf.where(tf.logical_not(tf.reduce_all(offsets >= 0, axis=-1)))[:, 0]
         return tf.gather(adjusted_boxes, idx), tf.gather(classes, idx)
 
+    def _random_pad_to_square_fn(self, image, boxes):
+        dims = tf.cast(tf.shape(image), dtype=_policy.compute_dtype)
+        image_height = dims[0]
+        image_width = dims[1]
+
+        ratio = tf.random.uniform([], minval=1, maxval=self._max_pad_ratio)
+        target_side = ratio * tf.maximum(image_height, image_width)
+
+        max_offset_x = tf.maximum(tf.cast(target_side - image_width, dtype=tf.int32), 1)
+        max_offset_y = tf.maximum(tf.cast(target_side - image_height, dtype=tf.int32), 1)
+
+        target_side = tf.cast(target_side, dtype=tf.int32)
+        offset_x = tf.random.uniform([], minval=0, maxval=max_offset_x, dtype=tf.int32)
+        offset_y = tf.random.uniform([], minval=0, maxval=max_offset_y, dtype=tf.int32)
+        padded_image = tf.image.pad_to_bounding_box(image, offset_y, offset_x, target_side, target_side)
+
+        offset_x = tf.cast(offset_x, dtype=_policy.compute_dtype)
+        offset_y = tf.cast(offset_y, dtype=_policy.compute_dtype)
+        offset_boxes = tf.stack([
+            boxes[:, 0] + offset_x,
+            boxes[:, 1] + offset_y,
+            boxes[:, 2] + offset_x,
+            boxes[:, 3] + offset_y,
+        ], axis=-1)
+        return padded_image, offset_boxes
+
     def _random_patch_fn(self, image, boxes, classes):
         boxes = absolute_to_relative(boxes, tf.shape(image))
-
+        min_obj_covered = tf.gather(self._min_obj_covered,
+                                    tf.random.uniform((), 0, len(self._min_obj_covered), dtype=tf.int32))
         start, size, crop_box = tf.python.image.sample_distorted_bounding_box_v2(
             image_size=tf.shape(image),
             bounding_boxes=tf.expand_dims(swap_xy(boxes), axis=0),
-            min_object_covered=self._min_obj_covered,
+            min_object_covered=min_obj_covered,
             area_range=self._area_range,
             aspect_ratio_range=self._aspect_ratio_range)
 
         crop_box = relative_to_absolute(swap_xy(crop_box[0]), tf.shape(image))
-
         cropped_image = tf.slice(image, start, size)
         cropped_image.set_shape([None, None, 3])
-
         boxes = relative_to_absolute(boxes, tf.shape(image))
         adjusted_boxes, adjusted_classes = self._filter_and_adjust_labels(crop_box, boxes, classes)
-
         return cropped_image, adjusted_boxes, adjusted_classes
 
     def _augment_data(self, image, boxes, classes):
-        if self._split == 'val' and not self._augment_val_dataset:
-            return image, boxes, classes
         image = image / 255.0
+        if self._random_pad_to_square:
+            if tf.random.uniform(()) > 0.5:
+                image, boxes = self._random_pad_to_square_fn(image, boxes)
         if self._random_patch:
-            image, boxes, classes = self._random_patch_fn(image, boxes, classes)
+            if tf.random.uniform(()) > 0.5:
+                image, boxes, classes = self._random_patch_fn(image, boxes, classes)
         if self._random_flip_horizonal:
             image, boxes = self._random_flip_horizontal_fn(image, boxes)
         if self._random_brightness:
@@ -150,8 +174,8 @@ class DatasetBuilder:
             tf.clip_by_value(boxes[..., 2], 0, original_dims[1]),
             tf.clip_by_value(boxes[..., 3], 0, original_dims[0])
         ], axis=-1)
-
-        image, boxes, classes = self._augment_data(image, boxes, classes)
+        if not self._split == 'val' or self._augment_val_dataset:
+            image, boxes, classes = self._augment_data(image, boxes, classes)
         new_dims = tf.shape(image)
         image = tf.image.resize(image,
                                 size=[self._input_height, self._input_width])
