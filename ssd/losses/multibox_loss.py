@@ -45,8 +45,10 @@ class ClsLoss(tf.losses.Loss):
         background_mask = tf.cast(tf.equal(y_true[:, :, 0], 1.0), dtype=_policy.compute_dtype)
         num_positives = tf.reduce_sum(1 - background_mask, axis=-1)
         negatives_to_keep = tf.cast(self._negatives_ratio * num_positives, dtype=tf.int32)
-
-        crossentropy = self._softmax_crossentropy(y_true, y_pred)
+        
+        crossentropy = tf.cast(self._softmax_crossentropy(tf.cast(y_true, dtype=tf.float32),
+                                                          tf.cast(y_pred, dtype=tf.float32)),
+                               dtype=_policy.compute_dtype)
 
         negative_loss = self._mine_hard_negatives(crossentropy, background_mask, negatives_to_keep)
         postive_loss = self._mine_positives(crossentropy, background_mask)
