@@ -118,7 +118,7 @@ train_images: 117266
 val_images: 4952
 
 tfrecords_train: gs://ssd_eu/tfrecord_datasets/coco/train*
-tfrecords_val: gs://ssd_eu/tfrecord_datasets/coco/train*
+tfrecords_val: gs://ssd_eu/tfrecord_datasets/coco/val*
 
 model_dir: gs://ssd_eu/model_files/coco/resnet_50_512x512-2
 

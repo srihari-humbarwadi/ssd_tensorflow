@@ -36,7 +36,6 @@ class SSDModel(tf.keras.Model):
         is_training = training and (not self._freeze_bn)
         return self._network(x, training=is_training)
 
-    @tf.function(experimental_compile=True)
     def train_step(self, data):
         images, y_true = data[0], data[1]
 
