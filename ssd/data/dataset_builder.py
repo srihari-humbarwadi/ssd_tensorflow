@@ -122,10 +122,10 @@ class DatasetBuilder:
     def _augment_data(self, image, boxes, classes):
         image = image / 255.0
         if self._random_pad_to_square:
-            if tf.random.uniform(()) > 0.5:
+            if tf.random.uniform(()) > 0.2:
                 image, boxes = self._random_pad_to_square_fn(image, boxes)
         if self._random_patch:
-            if tf.random.uniform(()) > 0.5:
+            if tf.random.uniform(()) > 0.2:
                 image, boxes, classes = self._random_patch_fn(image, boxes, classes)
         if self._random_flip_horizonal:
             image, boxes = self._random_flip_horizontal_fn(image, boxes)
