@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.python.image import sample_distorted_bounding_box_v2
+from tensorflow.python.ops.image_ops_impl import sample_distorted_bounding_box_v2
 
 from ssd.common.box_utils import convert_to_xywh, rescale_boxes, absolute_to_relative, swap_xy, relative_to_absolute
 from ssd.common.label_encoder import LabelEncoder
