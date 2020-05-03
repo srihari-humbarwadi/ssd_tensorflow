@@ -192,11 +192,14 @@ class DatasetBuilder:
         return image, label
 
     def _build_tfrecord_dataset(self):
+        _options = tf.data.Options()
+        _options.experimental_deterministic = False
         dataset = self._tfrecords.interleave(
             tf.data.TFRecordDataset,
-            cycle_length=8,
-            block_length=32,
+            cycle_length=128,
+            block_length=16,
             num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        dataset = dataset.with_options(_options)
         if self._cache_dataset_in_memory:
             dataset = dataset.cache()
         dataset = dataset.shuffle(512)
