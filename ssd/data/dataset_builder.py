@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.image import sample_distorted_bounding_box_v2
 
 from ssd.common.box_utils import convert_to_xywh, rescale_boxes, absolute_to_relative, swap_xy, relative_to_absolute
 from ssd.common.label_encoder import LabelEncoder
@@ -105,7 +106,7 @@ class DatasetBuilder:
         boxes = absolute_to_relative(boxes, tf.shape(image))
         min_obj_covered = tf.gather(self._min_obj_covered,
                                     tf.random.uniform((), 0, len(self._min_obj_covered), dtype=tf.int32))
-        start, size, crop_box = tf.python.image.sample_distorted_bounding_box_v2(
+        start, size, crop_box = sample_distorted_bounding_box_v2(
             image_size=tf.shape(image),
             bounding_boxes=tf.expand_dims(swap_xy(boxes), axis=0),
             min_object_covered=min_obj_covered,
