@@ -33,7 +33,7 @@ if __name__ == '__main__':
             image_name = save_dir + '{}.png'.format(i+1)
             image = image * 127.5 + 127.5
             decoded_boxes, decoded_cls_ids, _ = DecodePredictions(config)(label[i:i+1])
-            positive_mask = tf.cast(tf.argmax(label[i, :, 4:], axis=-1) != 0, dtype=tf.float32)
+            positive_mask = tf.cast(label[i, :, 4] != 0, dtype=tf.float32)
             matched_default_boxes = tf.gather(train_dataset._label_encoder._default_boxes,
                                               tf.where(positive_mask != 0)[:, 0])
             matched_default_boxes_xywh = convert_to_corners(matched_default_boxes)

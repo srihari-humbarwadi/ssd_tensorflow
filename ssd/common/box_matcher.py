@@ -11,9 +11,6 @@ class BoxMatcher:
         self._iou_threshold = iou_threshold
 
     def _compute_iou(self, boxes1, boxes2):
-        boxes1 = tf.cast(boxes1, dtype=_policy.compute_dtype)
-        boxes2 = tf.cast(boxes2, dtype=_policy.compute_dtype)
-
         boxes1_t = convert_to_corners(boxes1)
         boxes2_t = convert_to_corners(boxes2)
 

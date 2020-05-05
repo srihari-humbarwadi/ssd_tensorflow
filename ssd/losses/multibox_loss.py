@@ -45,7 +45,7 @@ class ClsLoss(tf.losses.Loss):
         background_mask = tf.cast(tf.equal(y_true[:, :, 0], 1.0), dtype=_policy.compute_dtype)
         num_positives = tf.reduce_sum(1 - background_mask, axis=-1)
         negatives_to_keep = tf.cast(self._negatives_ratio * num_positives, dtype=tf.int32)
-        
+
         crossentropy = tf.cast(self._softmax_crossentropy(tf.cast(y_true, dtype=tf.float32),
                                                           tf.cast(y_pred, dtype=tf.float32)),
                                dtype=_policy.compute_dtype)
@@ -63,6 +63,7 @@ class MultiBoxLoss(tf.losses.Loss):
         super(MultiBoxLoss, self).__init__(reduction=tf.losses.Reduction.NONE,
                                            name='ssd_loss',
                                            **kwargs)
+        self._num_classes = config['num_classes']
         self._cls_loss = ClsLoss(config['negatives_ratio'])
         self._loc_loss = LocLoss(config['smooth_l1_delta'])
         self._cls_loss_weight = config['cls_loss_weight']
@@ -70,7 +71,9 @@ class MultiBoxLoss(tf.losses.Loss):
 
     def call(self, y_true, y_pred):
         y_true_loc = y_true[:, :, :4]
-        y_true_cls = y_true[:, :, 4:]
+        y_true_cls = tf.one_hot(tf.cast(y_true[:, :, 4], dtype=tf.int32),
+                                depth=self._num_classes + 1,
+                                dtype=_policy.compute_dtype)
 
         y_pred_loc = y_pred[:, :, :4]
         y_pred_cls = y_pred[:, :, 4:]

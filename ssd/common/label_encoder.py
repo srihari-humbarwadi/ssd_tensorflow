@@ -33,9 +33,7 @@ class LabelEncoder:
         matched_gt_cls_ids = tf.gather(cls_ids, matched_gt_idx)
 
         loc_target = self._compute_loc_target(matched_gt_boxes)
-        cls_target = tf.cast(matched_gt_cls_ids * positive_mask, dtype=tf.int32)
-        cls_target = tf.one_hot(cls_target,
-                                depth=self._num_classes + 1,
-                                dtype=_policy.compute_dtype)
+        cls_target = matched_gt_cls_ids * positive_mask
+        cls_target = tf.expand_dims(cls_target, axis=-1)
         label = tf.concat([loc_target, cls_target], axis=-1)
         return label
