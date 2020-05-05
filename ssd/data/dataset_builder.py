@@ -127,10 +127,10 @@ class DatasetBuilder:
     def _augment_data(self, image, boxes, classes):
         image = image / 255.0
         if self._random_pad_to_square:
-            if tf.random.uniform(()) > 0.2:
+            if tf.random.uniform(()) > 0.5:
                 image, boxes = self._random_pad_to_square_fn(image, boxes)
         if self._random_patch:
-            if tf.random.uniform(()) > 0.2:
+            if tf.random.uniform(()) > 0.25:
                 image, boxes, classes = self._random_patch_fn(image, boxes, classes)
         if self._random_flip_horizonal:
             image, boxes = self._random_flip_horizontal_fn(image, boxes)
@@ -211,7 +211,7 @@ class DatasetBuilder:
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
         dataset = dataset.batch(self._batch_size, drop_remainder=True)
         dataset = dataset.repeat()
-        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+        dataset = dataset.prefetch(32)
         self._dataset = dataset
 
     @property
