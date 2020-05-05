@@ -75,8 +75,8 @@ with strategy.scope():
 
     loss_fn = MultiBoxLoss(config)
     lr_sched = tf.optimizers.schedules.PiecewiseConstantDecay(config['lr_boundaries'], config['lr_values'])
-    optimizer = tf.optimizers.SGD(lr_sched, momentum=config['optimizer_momentum'])
-    callbacks_list = CallbackBuilder('COCO_', config).get_callbacks()
+    optimizer = tf.optimizers.SGD(lr_sched, momentum=config['optimizer_momentum'], nesterov=config['nestrov'])
+    callbacks_list = CallbackBuilder('_COCO_', config).get_callbacks()
 
     model = SSDModel(config)
     model.compile(loss_fn=loss_fn, optimizer=optimizer)

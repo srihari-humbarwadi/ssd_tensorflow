@@ -117,39 +117,39 @@ freeze_bn: No
 train_images: 117266
 val_images: 4952
 
-tfrecords_train: ssd/data/dataset_files/coco/train*
-tfrecords_val: ssd/data/dataset_files/coco/val*
+tfrecords_train: gs://tfrc-srihari-europe/coco_tfrecords/train*
+tfrecords_val: gs://tfrc-srihari-europe/coco_tfrecords/val*
 
-model_dir: model_files/coco/resnet_50_512x512
+model_dir: gs://tfrc-srihari-europe/model_files/coco/resnet_50_512x512-64
 
-batch_size: 16
-lr_boundaries: [60000, 90000, 180000]
+batch_size: 64
+lr_boundaries: [10000, 90000, 180000]
 lr_values: [0.005, 0.001, 0.0001, 0.00001]
 optimizer_momentum: 0.95
 nestrov: Yes
 
 l2_regularization: 0.0004
-epochs: 200
-patience: 200
-cache_dataset_in_memory: No
+epochs: 1000
+patience: 1000
+cache_dataset_in_memory: Yes
 
-resume_training: No
+resume_training: Yes
 clear_previous_runs: Yes
 
-use_mixed_precision: No
+use_mixed_precision: Yes
 
-use_gpu: Yes
-multi_gpu: Yes
+use_gpu: No
+multi_gpu: No
 
-use_tpu: No
-tpu_name: tfrc-srihari-v3-5
+use_tpu: Yes
+tpu_name: tfrc-srihari-v3-1
 
 scale_lr: Yes
 scale_batch_size: Yes
 
 augment_val_dataset: No
 random_pad_to_square: Yes
-random_brightness: Yes
+random_brightness: No
 random_contrast: Yes
 random_saturation: Yes
 random_flip_horizonal: No

@@ -206,7 +206,6 @@ class DatasetBuilder:
         dataset = dataset.with_options(_options)
         if self._cache_dataset_in_memory:
             dataset = dataset.cache()
-        dataset = dataset.shuffle(512)
         dataset = dataset.map(self._parse_and_create_label,
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
         dataset = dataset.batch(self._batch_size, drop_remainder=True)
