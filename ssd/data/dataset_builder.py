@@ -81,16 +81,20 @@ class DatasetBuilder:
         image_height = dims[0]
         image_width = dims[1]
 
-        ratio = tf.random.uniform([], minval=1, maxval=self._max_pad_ratio)
-        target_side = ratio * tf.maximum(image_height, image_width)
+        ratio = tf.cast(tf.random.uniform([], minval=2, maxval=self._max_pad_ratio, dtype=tf.int32), dtype=_policy.compute_dtype)
+        target_height = ratio * image_height 
+        target_width = ratio * image_width
 
-        max_offset_x = tf.maximum(tf.cast(target_side - image_width, dtype=tf.int32), 1)
-        max_offset_y = tf.maximum(tf.cast(target_side - image_height, dtype=tf.int32), 1)
+        max_offset_x = tf.maximum(tf.cast(target_width - image_width, dtype=tf.int32), 1)
+        max_offset_y = tf.maximum(tf.cast(target_height - image_height, dtype=tf.int32), 1)
 
-        target_side = tf.cast(target_side, dtype=tf.int32)
+        target_height = tf.cast(target_height, dtype=tf.int32)
+        target_width = tf.cast(target_width, dtype=tf.int32)
+
         offset_x = tf.random.uniform([], minval=0, maxval=max_offset_x, dtype=tf.int32)
         offset_y = tf.random.uniform([], minval=0, maxval=max_offset_y, dtype=tf.int32)
-        padded_image = tf.image.pad_to_bounding_box(image, offset_y, offset_x, target_side, target_side)
+
+        padded_image = tf.image.pad_to_bounding_box(image, offset_y, offset_x, target_height, target_width)
 
         offset_x = tf.cast(offset_x, dtype=_policy.compute_dtype)
         offset_y = tf.cast(offset_y, dtype=_policy.compute_dtype)

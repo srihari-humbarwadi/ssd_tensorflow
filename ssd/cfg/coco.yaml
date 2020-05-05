@@ -117,15 +117,16 @@ freeze_bn: No
 train_images: 117266
 val_images: 4952
 
-tfrecords_train: gs://ssd_eu/tfrecord_datasets/coco/train*
-tfrecords_val: gs://ssd_eu/tfrecord_datasets/coco/val*
+tfrecords_train: ssd/data/dataset_files/coco/train*
+tfrecords_val: ssd/data/dataset_files/coco/coco/val*
 
-model_dir: gs://ssd_eu/model_files/coco/resnet_50_512x512-1
+model_dir: model_files/coco/resnet_50_512x512-4
 
-batch_size: 1
+batch_size: 32
 lr_boundaries: [10000, 90000, 180000]
-lr_values: [0.001, 0.0001, 0.00005, 0.00001]
+lr_values: [0.004, 0.0002, 0.00005, 0.00001]
 optimizer_momentum: 0.95
+nestrov: Yes
 
 l2_regularization: 0.0004
 epochs: 200
@@ -141,7 +142,7 @@ use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: tfrc-srihari-v3-4
+tpu_name: tfrc-srihari-v3-5
 
 scale_lr: Yes
 scale_batch_size: Yes
@@ -154,12 +155,12 @@ random_saturation: Yes
 random_flip_horizonal: No
 random_patch: Yes
 
-max_pad_ratio: 2.5
-brightness_max_delta: 0.2
+max_pad_ratio: 4
+brightness_max_delta: 0.15
 contrast_lower: 0.5
 contrast_upper: 1.5
 saturation_lower: 0.5
 saturation_upper: 1.5
-min_obj_covered: [0.1, 0.3, 0.5, 0.7, 0.9]
-area_range: [0.15, 1]
-aspect_ratio_range: [0.667, 1.334]
+min_obj_covered: [0.25, 0.4, 0.6, 0.8, 1]
+area_range: [0.12, 1]
+aspect_ratio_range: [0.75, 1.333]
