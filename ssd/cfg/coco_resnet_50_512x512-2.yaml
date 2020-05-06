@@ -107,11 +107,11 @@ nms_iou_threshold: 0.5
 score_threshold: 0.0001
 
 loc_loss_weight: 1.0
-cls_loss_weight: 2.0
+cls_loss_weight: 1.0
 negatives_ratio: 3
 smooth_l1_delta: 1.0
 
-backbone: resnet_50_v2
+backbone: resnet_50
 freeze_bn: No
 
 train_images: 117266
@@ -123,8 +123,8 @@ tfrecords_val: gs://tfrc-srihari-europe/coco_tfrecords/val*
 model_dir: gs://tfrc-srihari-europe/model_files/coco/resnet_50_512x512-2
 
 batch_size: 2
-lr_boundaries: [10000, 120000, 180000]
-lr_values: [0.0005, 0.0002, 0.0001, 0.00001]
+lr_boundaries: [500, 10000, 90000, 180000]
+lr_values: [0.00006, 0.001, 0.0005, 0.0001, 0.00005]
 optimizer_momentum: 0.95
 nestrov: Yes
 

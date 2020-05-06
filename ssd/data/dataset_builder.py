@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.python.ops.image_ops_impl import sample_distorted_bounding_box_v2
+from tensorflow.python.keras.applications.resnet import preprocess_input
 
 from ssd.common.box_utils import convert_to_xywh, rescale_boxes, absolute_to_relative, swap_xy, relative_to_absolute
 from ssd.common.label_encoder import LabelEncoder
@@ -188,9 +189,7 @@ class DatasetBuilder:
                               [new_dims[0], new_dims[1]],
                               [self._input_height, self._input_width])
 
-        if 'resnet' in self._backbone:
-            image = (image - 127.5) / 127.5
-
+        image = preprocess_input(image)
         boxes_xywh = convert_to_xywh(boxes)
         label = self._label_encoder.encode_sample(boxes_xywh, classes)
         return image, label

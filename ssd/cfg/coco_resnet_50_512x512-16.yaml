@@ -111,7 +111,7 @@ cls_loss_weight: 1.0
 negatives_ratio: 3
 smooth_l1_delta: 1.0
 
-backbone: resnet_50_v2
+backbone: resnet_50
 freeze_bn: No
 
 train_images: 117266
@@ -120,11 +120,11 @@ val_images: 4952
 tfrecords_train: gs://tfrc-srihari-europe/coco_tfrecords/train*
 tfrecords_val: gs://tfrc-srihari-europe/coco_tfrecords/val*
 
-model_dir: gs://tfrc-srihari-europe/model_files/coco/resnet_101_512x512-4
+model_dir: gs://tfrc-srihari-europe/model_files/coco/resnet_50_512x512-16
 
-batch_size: 4
-lr_boundaries: [10000, 90000, 180000]
-lr_values: [0.001, 0.0008, 0.0005, 0.00001]
+batch_size: 16
+lr_boundaries: [500, 10000, 90000, 180000]
+lr_values: [0.00006, 0.001, 0.0005, 0.0001, 0.00005]
 optimizer_momentum: 0.95
 nestrov: Yes
 
@@ -142,7 +142,7 @@ use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: tfrc-srihari-v3-5
+tpu_name: tfrc-srihari-v3-1
 
 scale_lr: Yes
 scale_batch_size: Yes
