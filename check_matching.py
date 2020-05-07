@@ -20,7 +20,8 @@ if __name__ == '__main__':
     config = load_config(sys.argv[1])
     save_dir = 'assets/matched_default_boxes/'
     os.system('rm assets/matched_default_boxes/*')
-    
+    config['batch_size'] = 16
+    config['score_threshold'] = 1e-20
     logger.info('\n\nconfig: {}\n'.format(config))
 
     train_dataset = DatasetBuilder('train', config)
@@ -28,12 +29,17 @@ if __name__ == '__main__':
 
     for images, label in train_ds:
         matched_boxes = []
+        loc_label = label[:, :, :4]
+        cls_label = tf.cast(label[:, :, 4], dtype=tf.int32)
+        cls_label = tf.one_hot(cls_label, depth=config['num_classes'], axis=-1)
+        label = tf.concat([loc_label, cls_label], axis=-1)
+
         for i in tqdm(range(images.shape[0])):
             image = images[i]
             image_name = save_dir + '{}.png'.format(i+1)
-            image = image * 127.5 + 127.5
+            image = (image + tf.constant([103.939, 116.779, 123.68]))[:, :, ::-1]
             decoded_boxes, decoded_cls_ids, _ = DecodePredictions(config)(label[i:i+1])
-            positive_mask = tf.cast(label[i, :, 4] != 0, dtype=tf.float32)
+            positive_mask = tf.cast(label[i, :, 4] != 1, dtype=tf.float32)
             matched_default_boxes = tf.gather(train_dataset._label_encoder._default_boxes,
                                               tf.where(positive_mask != 0)[:, 0])
             matched_default_boxes_xywh = convert_to_corners(matched_default_boxes)

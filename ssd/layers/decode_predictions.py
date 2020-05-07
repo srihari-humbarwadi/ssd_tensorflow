@@ -53,7 +53,6 @@ class DecodePredictions(tf.keras.layers.Layer):
 
         boxes = self._decode_loc_predictions(loc_predictions)
         cls_ids, cls_scores = self._decode_cls_predictions(cls_predictions)
-
         boxes, cls_ids, cls_scores = self._filter_background_predictions(boxes,
                                                                          cls_ids,
                                                                          cls_scores)

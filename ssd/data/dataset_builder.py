@@ -19,8 +19,10 @@ class DatasetBuilder:
         self._input_width = config['image_width']
         self._batch_size = config['batch_size']
         self._tfrecords = tf.data.Dataset.list_files(config['tfrecords_' + split])
+        self._mean_pixel = tf.constant(config['mean_pixel'], dtype=_policy.compute_dtype)
         self._augment_val_dataset = config['augment_val_dataset']
-        self._random_pad_to_square = config['random_pad_to_square']
+        self._random_pad = config['random_pad']
+        self._pad_to_square = config['pad_to_square']
         self._random_brightness = config['random_brightness']
         self._random_contrast = config['random_contrast']
         self._random_saturation = config['random_saturation']
@@ -49,15 +51,15 @@ class DatasetBuilder:
 
     def _random_brightness_fn(self, image):
         image = tf.image.random_brightness(image, self._brightness_max_delta)
-        return tf.clip_by_value(image, 0.0, 1)
+        return image
 
     def _random_contrast_fn(self, image):
         image = tf.image.random_contrast(image, self._contrast_lower, self._contrast_upper)
-        return tf.clip_by_value(image, 0.0, 1)
+        return image
 
     def _random_saturation_fn(self, image):
         image = tf.image.random_contrast(image, self._saturation_lower, self._saturation_upper)
-        return tf.clip_by_value(image, 0.0, 1)
+        return image
 
     def _filter_and_adjust_labels(self, crop_box, boxes, classes):
         boxes = tf.cast(boxes, dtype=_policy.compute_dtype)
@@ -77,13 +79,14 @@ class DatasetBuilder:
         idx = tf.where(tf.logical_not(tf.reduce_all(offsets >= 0, axis=-1)))[:, 0]
         return tf.gather(adjusted_boxes, idx), tf.gather(classes, idx)
 
-    def _random_pad_to_square_fn(self, image, boxes):
+    def _random_pad_fn(self, image, boxes):
         dims = tf.cast(tf.shape(image), dtype=_policy.compute_dtype)
         image_height = dims[0]
         image_width = dims[1]
 
-        ratio = tf.cast(tf.random.uniform([], minval=2, maxval=self._max_pad_ratio, dtype=tf.int32), dtype=_policy.compute_dtype)
-        target_height = ratio * image_height 
+        ratio = tf.cast(tf.random.uniform([], minval=2, maxval=self._max_pad_ratio,
+                                          dtype=tf.int32), dtype=_policy.compute_dtype)
+        target_height = ratio * image_height
         target_width = ratio * image_width
 
         max_offset_x = tf.maximum(tf.cast(target_width - image_width, dtype=tf.int32), 1)
@@ -97,6 +100,34 @@ class DatasetBuilder:
 
         padded_image = tf.image.pad_to_bounding_box(image, offset_y, offset_x, target_height, target_width)
 
+        offset_x = tf.cast(offset_x, dtype=_policy.compute_dtype)
+        offset_y = tf.cast(offset_y, dtype=_policy.compute_dtype)
+        offset_boxes = tf.stack([
+            boxes[:, 0] + offset_x,
+            boxes[:, 1] + offset_y,
+            boxes[:, 2] + offset_x,
+            boxes[:, 3] + offset_y,
+        ], axis=-1)
+        return padded_image, offset_boxes
+    
+    def _pad_to_square_fn(self, image, boxes):
+        dims = tf.shape(image)
+        image_height = dims[0]
+        image_width = dims[1]
+
+        side = tf.maximum(image_height, image_width)
+        if tf.random.uniform(()) > 0.5:
+            offset_x = 0
+            offset_y = 0
+        else:
+            if image_height < image_width:
+                offset_x = 0
+                offset_y = side - image_height
+            else:
+                offset_x = side - image_width
+                offset_y = 0
+        padded_image = tf.image.pad_to_bounding_box(image, offset_y, offset_x, side, side)
+        
         offset_x = tf.cast(offset_x, dtype=_policy.compute_dtype)
         offset_y = tf.cast(offset_y, dtype=_policy.compute_dtype)
         offset_boxes = tf.stack([
@@ -125,24 +156,29 @@ class DatasetBuilder:
         adjusted_boxes, adjusted_classes = self._filter_and_adjust_labels(crop_box, boxes, classes)
         return cropped_image, adjusted_boxes, adjusted_classes
 
-    def _augment_data(self, image, boxes, classes):
-        image = image / 255.0
-        if self._random_pad_to_square:
-            if tf.random.uniform(()) > 0.5:
-                image, boxes = self._random_pad_to_square_fn(image, boxes)
+    def _pad_and_crop(self, image, boxes, classes):
+        if self._random_pad:
+            if tf.random.uniform(()) > 0.2:
+                image, boxes = self._random_pad_fn(image, boxes)
+        elif self._pad_to_square:
+            if tf.random.uniform(()) > 0.2:
+                image, boxes = self._pad_to_square_fn(image, boxes)
         if self._random_patch:
             if tf.random.uniform(()) > 0.25:
                 image, boxes, classes = self._random_patch_fn(image, boxes, classes)
         if self._random_flip_horizonal:
             image, boxes = self._random_flip_horizontal_fn(image, boxes)
+        return image, boxes, classes
+
+    def _color_distort(self, image):
+        image = image / 255.0
         if self._random_brightness:
             image = self._random_brightness_fn(image)
         if self._random_contrast:
             image = self._random_contrast_fn(image)
         if self._random_saturation:
             image = self._random_saturation_fn(image)
-        image = image * 255.0
-        return image, boxes, classes
+        return tf.clip_by_value(image, 0.0, 1) * 255.0
 
     def _parse_example(self, example_proto):
         feature_description = {
@@ -180,8 +216,15 @@ class DatasetBuilder:
             tf.clip_by_value(boxes[..., 2], 0, original_dims[1]),
             tf.clip_by_value(boxes[..., 3], 0, original_dims[0])
         ], axis=-1)
+
         if not self._split == 'val' or self._augment_val_dataset:
-            image, boxes, classes = self._augment_data(image, boxes, classes)
+            image = self._color_distort(image)
+            image = image[:, :, ::-1] - self._mean_pixel
+            image, boxes, classes = self._pad_and_crop(image, boxes, classes)
+        else:
+            image = image[:, :, ::-1] - self._mean_pixel
+            image, boxes = self._pad_to_square_fn(image, boxes)
+
         new_dims = tf.shape(image)
         image = tf.image.resize(image,
                                 size=[self._input_height, self._input_width])
@@ -189,7 +232,6 @@ class DatasetBuilder:
                               [new_dims[0], new_dims[1]],
                               [self._input_height, self._input_width])
 
-        image = preprocess_input(image)
         boxes_xywh = convert_to_xywh(boxes)
         label = self._label_encoder.encode_sample(boxes_xywh, classes)
         return image, label
@@ -199,12 +241,13 @@ class DatasetBuilder:
         _options.experimental_deterministic = False
         dataset = self._tfrecords.interleave(
             tf.data.TFRecordDataset,
-            cycle_length=128,
+            cycle_length=256,
             block_length=16,
             num_parallel_calls=tf.data.experimental.AUTOTUNE)
         dataset = dataset.with_options(_options)
         if self._cache_dataset_in_memory:
             dataset = dataset.cache()
+        dataset = dataset.shuffle(8*self._batch_size)
         dataset = dataset.map(self._parse_and_create_label,
                               num_parallel_calls=tf.data.experimental.AUTOTUNE)
         dataset = dataset.batch(self._batch_size, drop_remainder=True)

@@ -102,7 +102,7 @@ class SSDModel(tf.keras.Model):
                        k_size,
                        stride,
                        padding,
-                       kernel_initializer='glorot_normal',
+                       kernel_initializer='he_normal',
                        use_bias=not use_bn)(tensor)
             if use_bn:
                 y = BatchNormalization()(y)
