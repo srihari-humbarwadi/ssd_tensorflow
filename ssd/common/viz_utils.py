@@ -50,3 +50,18 @@ def draw_boxes_cv2(image, boxes, categories, show_labels=True, thickness=1):
         image = cv2.rectangle(image, (_box[0], _box[1]), (_box[2], _box[3]),
                               [30, 15, 255], thickness)
     return image
+
+def visualize_detections(image, boxes, classes, scores, figsize=(7, 7), linewidth=1, color=[0, 0, 1]):
+    image = np.array(image, dtype=np.uint8)
+    plt.figure(figsize=figsize)
+    plt.axis('off')
+    plt.imshow(image)
+    ax = plt.gca()
+    for box, _cls, score in zip(boxes, classes, scores):
+        text = '{}: {:.1f}%'.format(_cls, score * 100)
+        x1, y1, x2, y2 = box
+        w, h = x2 - x1, y2 - y1
+        patch = plt.Rectangle([x1, y1], w, h, fill=False, edgecolor=color, linewidth=linewidth)
+        ax.add_patch(patch)
+        ax.text(x1, y1, text, bbox={'facecolor':color, 'alpha':0.5})
+    return ax
