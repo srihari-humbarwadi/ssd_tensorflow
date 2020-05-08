@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 import tensorflow as tf
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 from pycocotools.cocoeval import COCOeval
 from ssd.common.box_utils import rescale_boxes
