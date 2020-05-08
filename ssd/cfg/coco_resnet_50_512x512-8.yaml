@@ -1,5 +1,5 @@
-image_height: 512
-image_width: 512
+image_height: 640
+image_width: 640
 num_classes: 80
 classes:
   [
@@ -87,7 +87,7 @@ classes:
 
 clip_default_boxes: No
 scales: [0.04, 0.1, 0.26, 0.42, 0.58, 0.74, 0.9, 1.06]
-feature_shapes: [[64, 64], [32, 32], [16, 16], [8, 8], [6, 6], [4, 4], [1, 1]]
+feature_shapes: [[80, 80], [40, 40], [20, 20], [10, 10], [8, 8], [6, 6], [3, 3]]
 aspect_ratios:
   [
     [0.5, 1, 2],
@@ -104,7 +104,7 @@ match_iou_threshold: 0.5
 max_detections: 300
 
 nms_iou_threshold: 0.5
-score_threshold: 0.0001
+score_threshold: 0.5
 
 loc_loss_weight: 1.0
 cls_loss_weight: 1.0
@@ -117,14 +117,14 @@ freeze_bn: No
 train_images: 117266
 val_images: 4952
 
-tfrecords_train: ssd/data/dataset_files/coco/train*
-tfrecords_val: ssd/data/dataset_files/coco/val*
+tfrecords_train: gs://tfrc-srihari-europe/coco_tfrecords/train*
+tfrecords_val: gs://tfrc-srihari-europe/coco_tfrecords/val*
 
-model_dir: model_files/coco/resnet_50_512x512
+model_dir: gs://tfrc-srihari-europe/model_files/coco/resnet_50_512x512-8
 
 batch_size: 8
-lr_boundaries: [500, 10000, 90000, 180000]
-lr_values: [0.00006, 0.001, 0.0005, 0.0001, 0.00005]
+lr_boundaries: [500, 60000, 90000, 150000]
+lr_values: [0.00006, 0.008, 0.0008, 0.0001, 0.00005]
 optimizer_momentum: 0.95
 nestrov: Yes
 
@@ -142,9 +142,9 @@ use_gpu: No
 multi_gpu: No
 
 use_tpu: Yes
-tpu_name: tfrc-srihari-v3-2
+tpu_name: tfrc-srihari-v3-1
 
-scale_lr: Yes
+scale_lr: No
 scale_batch_size: Yes
 
 mean_pixel: [103.939, 116.779, 123.68] 
@@ -152,9 +152,9 @@ mean_pixel: [103.939, 116.779, 123.68]
 augment_val_dataset: No
 random_pad: No
 pad_to_square: Yes
-random_brightness: Yes
-random_contrast: Yes
-random_saturation: Yes
+random_brightness: No
+random_contrast: No
+random_saturation: No
 random_flip_horizonal: Yes
 random_patch: Yes
 
