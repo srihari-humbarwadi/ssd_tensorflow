@@ -7,11 +7,14 @@ from ssd.data.parsers.base_parser import Parser
 
 
 class CocoParser(Parser):
-    def __init__(self, download_path, only_mappings=False):
+    def __init__(self, download_path, only_mappings=False, only_val=False):
         super(CocoParser, self).__init__(download_path)
-        self._train_annotations_path = os.path.join(download_path, 'annotations/instances_train2017.json')
-        self._val_annotations_path = os.path.join(download_path, 'annotations/instances_val2017.json')
         self._only_mappings = only_mappings
+        self._only_val = only_val
+        if not only_val:
+            self._train_annotations_path = os.path.join(download_path, 'annotations/instances_train2017.json')
+        self._val_annotations_path = os.path.join(download_path, 'annotations/instances_val2017.json')
+        self._ann = {}
         self._build_dataset()
 
     def _build_dataset(self):
@@ -53,12 +56,14 @@ class CocoParser(Parser):
 
                 sample = {
                     'image': image_path,
+                    'image_id': image_id,
                     'label': {
                         'boxes': _convert_box_format(boxes),
                         'classes': classes
                     }
                 }
                 self._data[split_name].append(sample)
-
-        _build(self._train_annotations_path, 'train')
+                self._ann[split_name] = coco
+        if not self._only_val:
+            _build(self._train_annotations_path, 'train')
         _build(self._val_annotations_path, 'val')
