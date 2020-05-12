@@ -23,15 +23,17 @@ class CocoEvaluator(CocoParser):
         self._mean_pixel = config['mean_pixel']
         self._output_json_path = output_json_path
         self._config = config
+        self.model = None
 
     def load_model(self, latest_checkpoint=None):
-        model = SSDModel(self._config)
-        logger.info('Building model')
+        if self.model is None:
+            model = SSDModel(self._config)
+            logger.info('Building model')
+            self.model = model
         if latest_checkpoint is None:
             weights_dir = os.path.join(self._model_dir, 'best_weights')
             latest_checkpoint = tf.train.latest_checkpoint(weights_dir)
-        model.load_weights(latest_checkpoint)
-        self.model = model
+        self.model.load_weights(latest_checkpoint)
         logger.info('Initialized model weights from {}'.format(latest_checkpoint))
 
     def _convert_to_coco_format(self, image_id, detections):
