@@ -1,18 +1,14 @@
 # SSD: Single Shot MultiBox Detector
  
- ## Work in Progress, come back later
+ ![](assets/results/1.png)
  
- #### Training underway, some results on resnet_101 backbone
- 
- ![](assets/results/17.png)
- 
-  ![](assets/results/20.png)
- 
- ![](assets/results/19.png)
+ ![](assets/results/2.png)
  
  ![](assets/results/3.png)
  
- ![](assets/results/8.png)
+ ![](assets/results/4.png)
+ 
+ ![](assets/results/5.png)
  
 
 ```
