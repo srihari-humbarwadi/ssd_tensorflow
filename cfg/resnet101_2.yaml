@@ -129,8 +129,8 @@ optimizer_momentum: 0.95
 nestrov: No
 
 l2_regularization: 0.0004
-epochs: 1000
-patience: 1000
+epochs: 450
+patience: 35
 cache_dataset_in_memory: Yes
 
 resume_training: Yes
